@@ -1,26 +1,325 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/*
+  Global concerns only: palette, font wiring, keyframes, motion preferences.
+  Layout and spacing live in components as Tailwind utilities.
+*/
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* Palette: near-black base, white text, muted gray-green accents */
+  --color-ink: #0b0c0b;
+  --color-ink-soft: #141714;
+  --color-ink-line: #262b27;
+  --color-sage: #8f9e90;
+  --color-sage-light: #bac5ba;
+  --color-sage-dark: #56645a;
+
+  /* Fonts are provided by next/font in app/layout.tsx */
+  --font-sans: var(--font-inter);
+  --font-serif: var(--font-cormorant);
+
+  --animate-fade-up: fade-up 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-fade-in: fade-in 0.6s ease-out both;
+  --animate-nav-in: nav-in 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@keyframes nav-in {
+  from {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/*
+  Splash screen (components/ui/SplashScreen.tsx), 8s total.
+  One registered custom property, --splash-fill (0 to 1), is the fill progress.
+  It drives both the liquid's translateY and the clip that ends the stream, so
+  the stream bottom is always exactly the liquid surface. --splash-head and
+  --splash-tail are the stream's falling front and retracting top (SVG y values).
+*/
+@property --splash-fill {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0;
+}
+
+@property --splash-head {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 93;
+}
+
+@property --splash-tail {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 93;
+}
+
+/* 0.8-1.2s: the stream front falls from the bottle mouth into the glass. */
+@keyframes splash-progress-head {
+  0%,
+  10% {
+    --splash-head: 93;
+    animation-timing-function: cubic-bezier(0.55, 0, 1, 0.45);
+  }
+  15%,
+  100% {
+    --splash-head: 240;
+  }
+}
+
+/* 1.2-6.4s: the glass fills with a gentle, steady ease. */
+@keyframes splash-progress-fill {
+  0%,
+  15% {
+    --splash-fill: 0;
+    animation-timing-function: cubic-bezier(0.35, 0.1, 0.55, 0.95);
+  }
+  80%,
+  100% {
+    --splash-fill: 1;
+  }
+}
+
+/* 6.4-7.0s: the stream's top falls away and disappears into the liquid. */
+@keyframes splash-progress-tail {
+  0%,
+  80% {
+    --splash-tail: 93;
+    animation-timing-function: cubic-bezier(0.55, 0, 1, 0.45);
+  }
+  87.5%,
+  100% {
+    --splash-tail: 240;
+  }
+}
+
+@keyframes splash-overlay {
+  0%,
+  92.5% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.04);
+    visibility: hidden;
+  }
+}
+
+/* Reduced motion: 2.5s total, hold 2.1s then fade 0.4s. */
+@keyframes splash-overlay-reduced {
+  0%,
+  84% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+@keyframes splash-progress-fill-reduced {
+  from {
+    --splash-fill: 0;
+  }
+  to {
+    --splash-fill: 1;
+  }
+}
+
+@keyframes splash-fade-in-reduced {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes splash-skip {
+  to {
+    opacity: 0;
+    transform: scale(1.04);
+    visibility: hidden;
+  }
+}
+
+/* 0-1.0s tilt in, hold, 6.4-7.0s tilt back and fade. */
+@keyframes splash-bottle {
+  0% {
+    opacity: 0;
+    transform: translate(-36px, -70px) rotate(-55deg);
+  }
+  12.5%,
+  80% {
+    opacity: 1;
+    transform: translate(0, 0) rotate(0deg);
+  }
+  87.5%,
+  100% {
+    opacity: 0;
+    transform: translate(-14px, -34px) rotate(-38deg);
+  }
+}
+
+@keyframes splash-glass {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  12.5%,
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes splash-wave {
+  to {
+    transform: translateX(-40px);
+  }
+}
+
+/* 7.0-7.4s: the surface settles flat. */
+@keyframes splash-settle {
+  0%,
+  87.5% {
+    transform: scaleY(1);
+  }
+  92.5%,
+  100% {
+    transform: scaleY(0.35);
+  }
+}
+
+/* Ripples and droplets only while the stream is hitting the surface. */
+@keyframes splash-ripples {
+  0%,
+  15% {
+    opacity: 0;
+  }
+  17%,
+  80% {
+    opacity: 1;
+  }
+  84%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes splash-ripple {
+  from {
+    opacity: 0.8;
+    transform: scale(0.3);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.7);
+  }
+}
+
+/* A droplet hops up from the impact point and falls back in (--dx sets the side). */
+@keyframes splash-droplet {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0);
+  }
+  15% {
+    opacity: 0.9;
+  }
+  50% {
+    transform: translate(calc(var(--dx) * 0.5px), -6px);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(calc(var(--dx) * 1px), 0);
+  }
+}
+
+/* 6.0-7.4s: the brand name fades in. */
+@keyframes splash-brand {
+  0%,
+  75% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  92.5%,
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+html {
+  color-scheme: dark;
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-ink);
+  color: #ffffff;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  /*
+    Simplified splash (about 2.5s). These selectors are more specific than the
+    rule above, so they keep real durations: no bottle, stream, wave, ripples or
+    droplets; the wine fades in and rises, the name fades in, then it fades out.
+  */
+  [data-splash-overlay] {
+    animation: splash-overlay-reduced 2.5s ease forwards !important;
+  }
+  [data-splash-part="bottle"],
+  [data-splash-part="stream"],
+  [data-splash-part="ripples"] {
+    display: none;
+  }
+  [data-splash-part="wave"],
+  [data-splash-part="settle"],
+  [data-splash-part="glass"] {
+    animation: none !important;
+  }
+  [data-splash-part="svg"] {
+    animation: splash-progress-fill-reduced 1.5s cubic-bezier(0.45, 0, 0.25, 1) 0.3s both !important;
+  }
+  [data-splash-part="fill"] {
+    animation: splash-fade-in-reduced 0.6s ease-out 0.3s both !important;
+  }
+  [data-splash-part="brand"] {
+    animation: splash-fade-in-reduced 0.6s ease-out 1.2s both !important;
+  }
 }
