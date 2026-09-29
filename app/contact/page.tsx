@@ -1,13 +1,12 @@
 import type { Metadata } from "next";
-import ComingSoon from "@/components/ui/ComingSoon";
+import ContactSection from "@/components/sections/ContactSection";
 
-export const metadata: Metadata = { title: "Contact" };
+export const metadata: Metadata = {
+  title: "Contact",
+  description: "Contact Jeroso about a wine or a private tasting.",
+};
 
+// Same section component as the homepage, rendered as the page's main heading.
 export default function ContactPage() {
-  return (
-    <ComingSoon
-      title="Contact"
-      description="A contact form and store details are coming. Until then, browse the collection."
-    />
-  );
+  return <ContactSection context="page" />;
 }

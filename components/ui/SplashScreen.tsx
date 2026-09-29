@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
-import { setSplashActive } from "@/lib/splash-state";
+import { markSplashDone, setSplashActive } from "@/lib/splash-state";
 
 /*
   Site splash: wine pours from a tilted bottle into a glass, then the overlay
@@ -17,7 +17,8 @@ import { setSplashActive } from "@/lib/splash-state";
     1.2-6.4s  glass fills steadily to about 82 percent; the surface wave loops
     6.4-7.0s  stream retracts into the liquid, bottle tilts back and fades
     7.0-7.4s  surface settles, brand name finishes fading in
-    7.4-8.0s  overlay fades out, then unmounts
+    7.4-8.3s  "Jeroso" flies to the header logo while the backdrop fades, then unmounts
+              (if that cannot run, the overlay simply fades out at 7.4-8.0s)
   Reduced motion (about 2.5s): no bottle, stream, wave or ripples; the wine fades
   in and rises, then the overlay fades out.
 
@@ -34,6 +35,9 @@ import { setSplashActive } from "@/lib/splash-state";
 
 const HARD_CAP_MS = 9000;
 const ESCAPE_FADE_MS = 260;
+/** When the brand name starts flying to the header logo, and for how long. */
+const FLIGHT_AT_MS = 7400;
+const FLIGHT_MS = 900;
 
 /*
   Geometry, in SVG user units (viewBox 0 0 240 300).
@@ -78,6 +82,11 @@ export default function SplashScreen() {
   const [phase, setPhase] = useState<Phase>(() => (playedThisLoad ? "done" : "playing"));
   const overlayRef = useRef<HTMLDivElement>(null);
   const escapeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const backdropRef = useRef<HTMLDivElement>(null);
+  const svgRef = useRef<SVGSVGElement>(null);
+  const brandRef = useRef<HTMLParagraphElement>(null);
+  const glassRef = useRef<SVGGElement>(null);
+  const flyingRef = useRef(false);
 
   const visible = phase !== "done";
 
@@ -108,26 +117,115 @@ export default function SplashScreen() {
 
     if (overlay) overlay.style.willChange = "transform, opacity";
 
-    // End exactly when the overlay's CSS animation ends (8s, or 2.5s reduced).
+    // Fallback end: when the overlay's CSS animation ends (8s, or 2.5s reduced).
     let cancelled = false;
-    overlay
-      ?.getAnimations()[0]
-      ?.finished.then(() => {
+    const overlayAnimation = overlay?.getAnimations()[0];
+    overlayAnimation?.finished
+      .then(() => {
         if (!cancelled) finish();
       })
       .catch(() => {
-        // Replaced by the Escape fade; its timer finishes instead.
+        // Replaced by the brand flight or the Escape fade; they finish instead.
       });
     const cap = setTimeout(finish, HARD_CAP_MS);
 
+    /*
+      Brand hand-off: "Jeroso" flies from the splash center to the header logo,
+      landing at the logo's exact position and size, while the backdrop and glass
+      fade. The header logo text is hidden while the overlay exists (see Logo.tsx),
+      so when the overlay unmounts the real logo is already in the same spot.
+      If anything is missing, the CSS fade above simply finishes the splash.
+    */
+    let landingTimer: ReturnType<typeof setTimeout> | undefined;
+    const startFlight = () => {
+      const brand = brandRef.current;
+      const target = document.querySelector<HTMLElement>("[data-brand-logo]");
+      if (cancelled || !overlay || !brand || !target) return;
+      flyingRef.current = true;
+
+      const from = brand.getBoundingClientRect();
+      const to = target.getBoundingClientRect();
+      const scale =
+        parseFloat(getComputedStyle(target).fontSize) / parseFloat(getComputedStyle(brand).fontSize);
+
+      // Take over from CSS; both are at their resting state at this point, so nothing jumps.
+      overlay.style.animation = "none";
+      overlay.style.pointerEvents = "none";
+      brand.style.animation = "none";
+
+      backdropRef.current?.animate([{ opacity: 1 }, { opacity: 0 }], {
+        duration: 700,
+        easing: "ease-out",
+        fill: "forwards",
+      });
+      /*
+        The glass flies too: it shrinks into the header's wine glass icon, center to
+        center, scaled to the icon's height. Near the end it fades out while the real
+        icon fades in underneath (data-splash-landing un-hides it, see Logo.tsx).
+      */
+      const svg = svgRef.current;
+      const glass = glassRef.current;
+      const icon = document.querySelector<SVGElement>("[data-brand-icon]");
+      if (svg && glass && icon) {
+        const g = glass.getBoundingClientRect();
+        const i = icon.getBoundingClientRect();
+        const box = svg.getBoundingClientRect();
+        const glassX = g.left + g.width / 2;
+        const glassY = g.top + g.height / 2;
+        svg.style.transformOrigin = `${glassX - box.left}px ${glassY - box.top}px`;
+        svg.animate(
+          [
+            { transform: "translate(0px, 0px) scale(1)", opacity: 1 },
+            { opacity: 1, offset: 0.7 },
+            {
+              transform: `translate(${i.left + i.width / 2 - glassX}px, ${i.top + i.height / 2 - glassY}px) scale(${i.height / g.height})`,
+              opacity: 0,
+            },
+          ],
+          { duration: FLIGHT_MS, easing: "cubic-bezier(0.65, 0, 0.35, 1)", fill: "forwards" },
+        );
+        landingTimer = setTimeout(() => overlay.setAttribute("data-splash-landing", ""), FLIGHT_MS * 0.65);
+      } else {
+        svg?.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 400, easing: "ease-out", fill: "forwards" });
+      }
+      brand
+        .animate(
+          [
+            { transform: "translate(0px, 0px) scale(1)" },
+            {
+              transform: `translate(${to.left - from.left}px, ${to.top - from.top}px) scale(${scale})`,
+            },
+          ],
+          { duration: FLIGHT_MS, easing: "cubic-bezier(0.65, 0, 0.35, 1)", fill: "forwards" },
+        )
+        .finished.then(() => {
+          if (!cancelled) finish();
+        })
+        .catch(() => {
+          // Unmounted mid-flight.
+        });
+    };
+
+    // Schedule the flight on the overlay's own clock, so late hydration stays in sync.
+    let flightTimer: ReturnType<typeof setTimeout> | undefined;
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (!reduced && overlayAnimation) {
+      const elapsed = typeof overlayAnimation.currentTime === "number" ? overlayAnimation.currentTime : 0;
+      if (elapsed < FLIGHT_AT_MS + 200) {
+        flightTimer = setTimeout(startFlight, Math.max(0, FLIGHT_AT_MS - elapsed));
+      }
+    }
+
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") endEarly();
+      if (e.key === "Escape" && !flyingRef.current) endEarly();
     };
     document.addEventListener("keydown", onKeyDown);
 
     return () => {
       cancelled = true;
       clearTimeout(cap);
+      clearTimeout(flightTimer);
+      clearTimeout(landingTimer);
       if (escapeTimerRef.current) clearTimeout(escapeTimerRef.current);
       document.removeEventListener("keydown", onKeyDown);
       root.style.overflow = prevOverflow;
@@ -136,6 +234,16 @@ export default function SplashScreen() {
       setSplashActive(false);
     };
   }, [visible, finish, endEarly]);
+
+  /*
+    Report "done" once the splash is gone. React runs the effect above's cleanup
+    (which restores the scroll lock) before this body, so anything waiting on
+    whenSplashDone() can scroll freely. Safe under Strict Mode's double effects,
+    because it only fires when the splash is actually hidden.
+  */
+  useEffect(() => {
+    if (!visible) markSplashDone();
+  }, [visible]);
 
   if (!visible) return null;
 
@@ -146,21 +254,25 @@ export default function SplashScreen() {
       data-lenis-prevent
       className={[
         // Above the navbar (z-50) and every page layer.
-        "fixed inset-0 z-[1000] flex flex-col items-center justify-center bg-ink",
+        "fixed inset-0 z-[1000] flex flex-col items-center justify-center",
         phase === "skipping"
           ? "animate-[splash-skip_250ms_ease-out_forwards]"
           : "animate-[splash-overlay_8s_ease-in-out_forwards]",
       ].join(" ")}
     >
+      {/* Backdrop is its own layer so it can fade while the brand name flies. */}
+      <div ref={backdropRef} aria-hidden="true" className="absolute inset-0 bg-ink" />
+
       <div role="status" aria-live="polite" className="sr-only">
         Loading
       </div>
 
       <svg
+        ref={svgRef}
         aria-hidden="true"
         data-splash-part="svg"
         viewBox="0 0 240 300"
-        className="h-[min(56vh,420px)] w-auto overflow-visible"
+        className="relative h-[min(56vh,420px)] w-auto overflow-visible"
         // One timeline for the shared progress values (see app/globals.css).
         style={{
           animation:
@@ -303,8 +415,8 @@ export default function SplashScreen() {
           </g>
         </g>
 
-        {/* 5. Glass front: outline, rim, reflection, stem, base (above the wine). */}
-        <g data-splash-part="glass" className={`${svgBox} animate-[splash-glass_8s_ease-out_both]`}>
+        {/* 5. Glass front: outline, rim, reflection, stem, base (above the wine). Measured for the flight. */}
+        <g ref={glassRef} data-splash-part="glass" className={`${svgBox} animate-[splash-glass_8s_ease-out_both]`}>
           <path d={BOWL_OUTLINE} fill="none" className="stroke-sage-light/60" strokeWidth="1.5" />
           <ellipse cx="120" cy="150" rx="42" ry="3" fill="none" className="stroke-sage-light/40" strokeWidth="1" />
           <path
@@ -340,10 +452,12 @@ export default function SplashScreen() {
         </g>
       </svg>
 
+      {/* Same font, style, tracking and line height as the header logo, so the flight lands exactly. */}
       <p
+        ref={brandRef}
         aria-hidden="true"
         data-splash-part="brand"
-        className="mt-6 font-serif text-4xl italic tracking-wide text-white animate-[splash-brand_8s_ease-out_both] sm:text-5xl"
+        className="relative mt-6 origin-top-left font-serif text-4xl italic leading-none tracking-wide text-white animate-[splash-brand_8s_ease-out_both] sm:text-5xl"
       >
         Jeroso
       </p>

@@ -9,19 +9,19 @@ type PurchasePanelProps = {
   maxQuantity?: number;
 };
 
-/** Quantity stepper next to the Add to Cart button. */
+/** Quantity stepper next to a wide outlined Add to Cart button, both in matching rounded boxes. */
 export default function PurchasePanel({ wineName, maxQuantity = 12 }: PurchasePanelProps) {
   const [quantity, setQuantity] = useState(1);
 
   const stepperButton =
-    "flex h-12 w-12 items-center justify-center text-white/80 hover:text-white disabled:cursor-not-allowed disabled:opacity-30";
+    "flex h-10 w-10 items-center justify-center rounded-lg text-sage hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sage-light disabled:cursor-not-allowed disabled:opacity-30 motion-safe:transition-colors";
 
   return (
-    <div className="flex flex-wrap items-center gap-4">
+    <div className="flex w-full max-w-md items-stretch gap-2">
       <div
         role="group"
         aria-label="Quantity"
-        className="flex items-center rounded-full border border-ink-line"
+        className="flex h-12 shrink-0 items-center rounded-xl border border-white/15 bg-white/[0.03] px-1"
       >
         <button
           type="button"
@@ -30,10 +30,11 @@ export default function PurchasePanel({ wineName, maxQuantity = 12 }: PurchasePa
           disabled={quantity <= 1}
           aria-label="Decrease quantity"
         >
-          <Minus aria-hidden="true" className="h-4 w-4" />
+          <Minus aria-hidden="true" className="h-4 w-4" strokeWidth={1.5} />
         </button>
-        <output aria-live="polite" className="w-8 text-center tabular-nums">
-          {quantity}
+        {/* Shown as 01, 02...; screen readers get the plain number. */}
+        <output aria-live="polite" aria-label={`Quantity ${quantity}`} className="w-8 text-center text-sm tabular-nums text-white">
+          {String(quantity).padStart(2, "0")}
         </output>
         <button
           type="button"
@@ -42,11 +43,11 @@ export default function PurchasePanel({ wineName, maxQuantity = 12 }: PurchasePa
           disabled={quantity >= maxQuantity}
           aria-label="Increase quantity"
         >
-          <Plus aria-hidden="true" className="h-4 w-4" />
+          <Plus aria-hidden="true" className="h-4 w-4" strokeWidth={1.5} />
         </button>
       </div>
 
-      <AddToCartButton wineName={wineName} quantity={quantity} />
+      <AddToCartButton wineName={wineName} quantity={quantity} variant="outline" className="flex-1" />
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Container from "@/components/layout/Container";
 import Logo from "@/components/layout/Logo";
+import SectionLink from "@/components/navigation/SectionLink";
 import { accountLinks, primaryLinks } from "@/lib/navigation";
 
 export default function Footer() {
@@ -22,9 +23,15 @@ export default function Footer() {
           <ul className="mt-4 space-y-2">
             {primaryLinks.map((link) => (
               <li key={link.href}>
-                <Link href={link.href} className="text-sm text-white/70 hover:text-white">
-                  {link.label}
-                </Link>
+                {link.section ? (
+                  <SectionLink section={link.section} className="text-sm text-white/70 hover:text-white">
+                    {link.label}
+                  </SectionLink>
+                ) : (
+                  <Link href={link.href} className="text-sm text-white/70 hover:text-white">
+                    {link.label}
+                  </Link>
+                )}
               </li>
             ))}
           </ul>
@@ -47,7 +54,7 @@ export default function Footer() {
       <div className="border-t border-ink-line">
         <Container className="flex flex-col gap-2 py-6 text-xs text-white/50 sm:flex-row sm:items-center sm:justify-between">
           <p>&copy; {year} Jeroso. All rights reserved.</p>
-          <p>Please enjoy responsibly. Must be of legal drinking age.</p>
+          <p>Must be 18 or older to purchase alcohol. Please enjoy responsibly.</p>
         </Container>
       </div>
     </footer>

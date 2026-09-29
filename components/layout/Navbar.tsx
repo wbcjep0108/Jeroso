@@ -7,7 +7,9 @@ import { Heart, Search, ShoppingBag, User } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import Container from "@/components/layout/Container";
 import Logo from "@/components/layout/Logo";
-import { isActivePath, primaryLinks } from "@/lib/navigation";
+import SectionLink from "@/components/navigation/SectionLink";
+import { isActivePath, primaryLinks, type NavLink } from "@/lib/navigation";
+import { useActiveSection } from "@/lib/sections";
 
 type NavbarProps = {
   /**
@@ -89,6 +91,7 @@ export default function Navbar({ transparent }: NavbarProps) {
   const tuckedAway = useHideOnScrollDown();
   const toggleRef = useRef<HTMLButtonElement>(null);
   const menuId = useId();
+  const activeSection = useActiveSection();
 
   const isTransparentVariant = transparent ?? pathname === "/";
   const seeThrough = isTransparentVariant && !scrolled && !menuOpen;
@@ -108,7 +111,15 @@ export default function Navbar({ transparent }: NavbarProps) {
   }, [menuOpen]);
 
   const closeMenu = () => setMenuOpen(false);
-  const mobileLinks = [...primaryLinks, iconLinks[0], iconLinks[2]];
+  const mobileLinks: NavLink[] = [...primaryLinks, iconLinks[0], iconLinks[2]];
+
+  // On the homepage, section links follow the section on screen; elsewhere, the route.
+  const isHome = pathname === "/";
+  const currentValue = isHome ? "location" : "page";
+  function isLinkActive(link: NavLink): boolean {
+    if (isHome) return link.section !== undefined && link.section === activeSection;
+    return isActivePath(pathname, link.href);
+  }
 
   // Only the fixed (hero) variant changes height, so sticky pages never reflow while scrolling.
   const barHeight = isTransparentVariant ? (seeThrough ? "h-22" : "h-16") : "h-18";
@@ -142,23 +153,26 @@ export default function Navbar({ transparent }: NavbarProps) {
         <nav aria-label="Primary" className="hidden lg:block">
           <ul className="flex items-center gap-8">
             {primaryLinks.map((link) => {
-              const active = isActivePath(pathname, link.href);
-              return (
-                <li key={link.href}>
-                  <Link
-                    href={link.href}
-                    aria-current={active ? "page" : undefined}
-                    className={[
+              const active = isLinkActive(link);
+              const className = [
                       "relative py-2 text-sm tracking-wide motion-safe:transition-colors motion-safe:duration-300",
                       "after:absolute after:inset-x-0 after:-bottom-0.5 after:h-px after:origin-left after:bg-sage-light",
                       "motion-safe:after:transition-transform motion-safe:after:duration-500 motion-safe:after:ease-[cubic-bezier(0.22,1,0.36,1)]",
                       active
                         ? "text-white after:scale-x-100"
                         : "text-white/70 after:scale-x-0 hover:text-white hover:after:scale-x-100 focus-visible:after:scale-x-100",
-                    ].join(" ")}
-                  >
-                    {link.label}
-                  </Link>
+                    ].join(" ");
+              return (
+                <li key={link.href}>
+                  {link.section ? (
+                    <SectionLink section={link.section} aria-current={active ? currentValue : undefined} className={className}>
+                      {link.label}
+                    </SectionLink>
+                  ) : (
+                    <Link href={link.href} aria-current={active ? "page" : undefined} className={className}>
+                      {link.label}
+                    </Link>
+                  )}
                 </li>
               );
             })}
@@ -233,7 +247,14 @@ export default function Navbar({ transparent }: NavbarProps) {
             <Container className="py-4">
               <ul className="flex flex-col">
                 {mobileLinks.map((link, i) => {
-                  const active = isActivePath(pathname, link.href);
+                  const active = isLinkActive(link);
+                  const className = [
+                    "flex items-center gap-3 border-l-2 py-3 pl-4 font-serif text-2xl italic",
+                    "motion-safe:transition-[color,border-color,padding] motion-safe:duration-300",
+                    active
+                      ? "border-sage-light text-white"
+                      : "border-transparent text-white/70 hover:border-sage-dark hover:pl-5 hover:text-white",
+                  ].join(" ");
                   return (
                     <li
                       key={link.href}
@@ -244,20 +265,26 @@ export default function Navbar({ transparent }: NavbarProps) {
                       ].join(" ")}
                       style={{ transitionDelay: menuOpen ? `${80 + i * 45}ms` : "0ms" }}
                     >
-                      <Link
-                        href={link.href}
-                        onClick={closeMenu}
-                        aria-current={active ? "page" : undefined}
-                        className={[
-                          "flex items-center gap-3 border-l-2 py-3 pl-4 font-serif text-2xl italic",
-                          "motion-safe:transition-[color,border-color,padding] motion-safe:duration-300",
-                          active
-                            ? "border-sage-light text-white"
-                            : "border-transparent text-white/70 hover:border-sage-dark hover:pl-5 hover:text-white",
-                        ].join(" ")}
-                      >
-                        {link.label}
-                      </Link>
+                      {link.section ? (
+                        // Closes the menu first, then scrolls (see SectionLink).
+                        <SectionLink
+                          section={link.section}
+                          onNavigate={closeMenu}
+                          aria-current={active ? currentValue : undefined}
+                          className={className}
+                        >
+                          {link.label}
+                        </SectionLink>
+                      ) : (
+                        <Link
+                          href={link.href}
+                          onClick={closeMenu}
+                          aria-current={active ? "page" : undefined}
+                          className={className}
+                        >
+                          {link.label}
+                        </Link>
+                      )}
                     </li>
                   );
                 })}

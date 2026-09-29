@@ -1,13 +1,12 @@
 import type { Metadata } from "next";
-import ComingSoon from "@/components/ui/ComingSoon";
+import TastingsSection from "@/components/sections/TastingsSection";
 
-export const metadata: Metadata = { title: "Tastings" };
+export const metadata: Metadata = {
+  title: "Tastings",
+  description: "Guided and private wine tastings at Jeroso.",
+};
 
+// Same section component as the homepage, rendered as the page's main heading.
 export default function TastingsPage() {
-  return (
-    <ComingSoon
-      title="Tastings"
-      description="Guided tastings and sommelier-led evenings. Dates and booking will appear here."
-    />
-  );
+  return <TastingsSection context="page" />;
 }

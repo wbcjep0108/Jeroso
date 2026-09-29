@@ -1,6 +1,5 @@
 import Image from "next/image";
 import Link from "next/link";
-import { MessageCircle } from "lucide-react";
 import { preload } from "react-dom";
 import HalftoneHero from "@/components/effects/HalftoneHero";
 import { HERO_HALFTONE_SRC } from "@/components/effects/halftone-config";
@@ -53,7 +52,7 @@ export default function Hero({ weeklyPick }: HeroProps) {
         </Reveal>
       </Container>
 
-      {/* Floating feature card (bottom-left, hidden on mobile) and round button (bottom-right). */}
+      {/* Floating feature card, bottom-left (hidden on mobile). */}
       <div className="pointer-events-none absolute inset-x-0 bottom-6 sm:bottom-8">
         <Container>
           <Reveal delay={200} className="flex items-end justify-between">
@@ -78,17 +77,6 @@ export default function Hero({ weeklyPick }: HeroProps) {
               <span className="mt-1 text-xs text-white/60">{displayWineMeta(weeklyPick)}</span>
             </span>
           </Link>
-
-          {/* PLACEHOLDER: no action wired yet. Marked disabled and labelled as coming soon. */}
-          <button
-            type="button"
-            aria-disabled="true"
-            aria-label="Chat with a sommelier (coming soon)"
-            title="Coming soon"
-            className="pointer-events-auto ml-auto flex h-14 w-14 cursor-not-allowed items-center justify-center rounded-full border border-white/15 bg-ink/60 text-white/80 backdrop-blur-md"
-          >
-            <MessageCircle aria-hidden="true" className="h-5 w-5" strokeWidth={1.5} />
-          </button>
           </Reveal>
         </Container>
       </div>

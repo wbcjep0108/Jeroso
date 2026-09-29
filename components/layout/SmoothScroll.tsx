@@ -36,8 +36,9 @@ export default function SmoothScroll({ children }: { children: ReactNode }) {
           options={{
             lerp: 0.1,
             smoothWheel: true,
-            // Let in-page links like the "Skip to content" anchor glide too.
-            anchors: true,
+            // Off: section jumps go through scrollToSection() (lib/sections.ts), which
+            // knows about the splash and the navbar offset.
+            anchors: false,
           }}
         />
       )}
