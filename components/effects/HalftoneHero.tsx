@@ -19,8 +19,9 @@ import {
   - mounts only while the hero is on screen and the tab is visible,
   - unmounts otherwise, which runs HalftoneReveal's own cleanup and stops its
     render loop and pointer listeners,
-  - uses lighter settings on weaker or touch devices and none of the pointer
-    animation when reduced motion is requested.
+  - shows the cursor circle whenever a mouse or trackpad is available, with fewer
+    dots on weaker devices or narrow windows,
+  - skips the circle on touch-only devices and when reduced motion is requested.
 */
 
 const SRC = HERO_HALFTONE_SRC;
@@ -36,7 +37,10 @@ const FIXED_PROPS = {
   borderRadius: "0px",
 } as const;
 
+// Touch-only devices: no hover, so no cursor circle.
 const LITE_PROPS = { trigger: "off", idleReveal: 0.35, dotDensity: 55 } as const;
+// Mouse or trackpad on a weaker device or narrow window: keep the circle, fewer dots.
+const HOVER_LITE_PROPS = { trigger: "hover", dotDensity: 55, follow: 0.37 } as const;
 const FULL_PROPS = { trigger: "hover", dotDensity: 80, follow: 0.37 } as const;
 const REDUCED_MOTION_PROPS = { trigger: "off", idleReveal: 1, dotDensity: 55 } as const;
 
@@ -60,23 +64,39 @@ const HalftoneReveal = dynamic(
   { ssr: false, loading: () => null },
 );
 
-/* ---------- one-shot client checks via useSyncExternalStore (SSR-safe) ---------- */
+/* ---------- client checks via useSyncExternalStore (SSR-safe) ---------- */
 
-const noopSubscribe = () => () => {};
+type DeviceTier = "touch" | "hover-lite" | "full" | "unknown";
 
-type DeviceTier = "lite" | "full" | "unknown";
+// Any input that can hover precisely (mouse, trackpad), even if the primary one is touch.
+const HOVER_QUERY = "(any-hover: hover) and (any-pointer: fine)";
+const NARROW_QUERY = "(max-width: 767px)";
 
+/*
+  Hover capability decides whether the cursor circle is on. Core count and width
+  only decide dot density, so weaker laptops still get the circle.
+*/
 function readDeviceTier(): DeviceTier {
+  if (!window.matchMedia(HOVER_QUERY).matches) return "touch";
   const weak =
-    window.innerWidth < 768 ||
-    (navigator.hardwareConcurrency ?? 8) <= 4 ||
-    window.matchMedia("(pointer: coarse)").matches;
-  return weak ? "lite" : "full";
+    (navigator.hardwareConcurrency ?? 8) <= 4 || window.matchMedia(NARROW_QUERY).matches;
+  return weak ? "hover-lite" : "full";
 }
 
-/** Evaluated once on the client; no subscription, so it never re-runs on resize. */
+function subscribeDeviceTier(callback: () => void) {
+  const hover = window.matchMedia(HOVER_QUERY);
+  const narrow = window.matchMedia(NARROW_QUERY);
+  hover.addEventListener("change", callback);
+  narrow.addEventListener("change", callback);
+  return () => {
+    hover.removeEventListener("change", callback);
+    narrow.removeEventListener("change", callback);
+  };
+}
+
+/** Re-evaluated when a mouse is attached or removed, or the 768px width threshold is crossed. */
 function useDeviceTier(): DeviceTier {
-  return useSyncExternalStore(noopSubscribe, readDeviceTier, () => "unknown");
+  return useSyncExternalStore(subscribeDeviceTier, readDeviceTier, () => "unknown");
 }
 
 const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
@@ -139,9 +159,11 @@ export default function HalftoneHero() {
   const shouldRender = inView && tabVisible && tier !== "unknown" && !splashActive;
   const variantProps = reducedMotion
     ? REDUCED_MOTION_PROPS
-    : tier === "lite"
+    : tier === "touch"
       ? LITE_PROPS
-      : FULL_PROPS;
+      : tier === "hover-lite"
+        ? HOVER_LITE_PROPS
+        : FULL_PROPS;
 
   return (
     <div ref={wrapperRef} className="absolute inset-0 overflow-hidden bg-ink">
@@ -166,7 +188,11 @@ export default function HalftoneHero() {
   );
 }
 
-type VariantProps = typeof LITE_PROPS | typeof FULL_PROPS | typeof REDUCED_MOTION_PROPS;
+type VariantProps =
+  | typeof LITE_PROPS
+  | typeof HOVER_LITE_PROPS
+  | typeof FULL_PROPS
+  | typeof REDUCED_MOTION_PROPS;
 
 /**
  * Canvas layer. Starts fully transparent over the opaque static image and fades
