@@ -22,8 +22,8 @@ type NavbarProps = {
 const iconLinks: { href: string; label: string; Icon: LucideIcon }[] = [
   { href: "/search", label: "Search", Icon: Search },
   { href: "/wishlist", label: "Wishlist", Icon: Heart },
-  { href: "/account", label: "Account", Icon: User },
   { href: "/cart", label: "Cart", Icon: ShoppingBag },
+  { href: "/account", label: "Account", Icon: User },
 ];
 
 /** Past this, the transparent variant turns solid. */
@@ -111,7 +111,7 @@ export default function Navbar({ transparent }: NavbarProps) {
   }, [menuOpen]);
 
   const closeMenu = () => setMenuOpen(false);
-  const mobileLinks: NavLink[] = [...primaryLinks, iconLinks[0], iconLinks[2]];
+  const mobileLinks: NavLink[] = [...primaryLinks, iconLinks[0], iconLinks[3]];
 
   // On the homepage, section links follow the section on screen; elsewhere, the route.
   const isHome = pathname === "/";
