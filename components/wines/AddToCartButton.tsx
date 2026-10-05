@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCart } from "@/contexts/CartContext";
 import type { Wine } from "@/lib/wines";
+import { authErrorMessage } from "@/lib/auth-errors";
 
 type AddToCartButtonProps = {
   wine: Pick<Wine, "slug" | "name" | "price" | "image">;
@@ -31,7 +32,7 @@ export default function AddToCartButton({
   variant = "solid",
 }: AddToCartButtonProps) {
   const [notice, setNotice] = useState(false);
-  const [error, setError] = useState(false);
+  const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const router = useRouter();
@@ -52,16 +53,16 @@ export default function AddToCartButton({
     }
 
     setSaving(true);
-    setError(false);
+    setError("");
     try {
       await addItem(wine, quantity);
       setNotice(true);
       if (timer.current) clearTimeout(timer.current);
       timer.current = setTimeout(() => setNotice(false), 2500);
-    } catch {
-      setError(true);
+    } catch (cartError) {
+      setError(authErrorMessage(cartError));
       if (timer.current) clearTimeout(timer.current);
-      timer.current = setTimeout(() => setError(false), 3000);
+      timer.current = setTimeout(() => setError(""), 5000);
     } finally {
       setSaving(false);
     }
@@ -89,7 +90,7 @@ export default function AddToCartButton({
         {saving ? "Adding…" : error ? "Try Again" : notice ? "Added to Cart" : "Add to Cart"}
       </button>
       <span role="status" aria-live="polite" className="sr-only">
-        {notice ? `${wine.name} added to your cart.` : error ? "Could not add this item. Check your connection and try again." : ""}
+        {notice ? `${wine.name} added to your cart.` : error}
       </span>
     </>
   );

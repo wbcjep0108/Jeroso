@@ -1,6 +1,5 @@
 ﻿"use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import FlipCard from "@/components/ui/FlipCard";
@@ -10,12 +9,11 @@ type InsightFlipCardProps = {
   guide: InsightGuide;
   /** Serializable array of { slug, name } pairs from lib/wines. */
   wineEntries: { slug: string; name: string }[];
-  priority?: boolean;
 };
 
 const CARD_BG = "#13120e";
 
-export default function InsightFlipCard({ guide, wineEntries, priority = false }: InsightFlipCardProps) {
+export default function InsightFlipCard({ guide, wineEntries }: InsightFlipCardProps) {
   const wineNames = new Map(wineEntries.map((w) => [w.slug, w.name]));
 
   return (
@@ -39,14 +37,12 @@ export default function InsightFlipCard({ guide, wineEntries, priority = false }
       ariaLabel={`${guide.region} — click or press Enter to see details`}
       front={
         /* Front face: full-bleed country photo + gradient overlay + region label */
-        <div className="relative h-full w-full">
-          <Image
-            src={guide.image}
-            alt={`Landscape of ${guide.country}`}
-            fill
-            sizes="(max-width: 768px) 100vw, 400px"
-            className="object-cover"
-            priority={priority}
+        <div className="relative h-full w-full overflow-hidden">
+          <div
+            role="img"
+            aria-label={`Landscape of ${guide.country}`}
+            className="absolute inset-0 h-full w-full bg-center bg-no-repeat"
+            style={{ backgroundImage: `url("${guide.image}")`, backgroundSize: "cover" }}
           />
           {/* Dark gradient so text is always legible over any photo */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />

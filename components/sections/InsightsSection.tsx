@@ -38,7 +38,6 @@ export default async function InsightsSection({ context }: { context: SectionCon
               <InsightFlipCard
                 guide={guide}
                 wineEntries={wineEntries}
-                priority={i < 3}
               />
             </Reveal>
           </li>
