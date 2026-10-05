@@ -69,7 +69,7 @@ export default function WineCard({ wine, size = "sm", inactive = false }: WineCa
               <p className="font-serif text-3xl">{formatPrice(wine.price)}</p>
               {/* sm:ml-auto: on wider screens the button sits at the right edge of the text column, level with the price. */}
               <div className="pointer-events-auto relative z-10 sm:ml-auto">
-                <AddToCartButton wineName={wine.name} tabIndex={inactive ? -1 : undefined} />
+                <AddToCartButton wine={wine} tabIndex={inactive ? -1 : undefined} />
               </div>
             </div>
           </div>
@@ -99,7 +99,7 @@ export default function WineCard({ wine, size = "sm", inactive = false }: WineCa
         <div className="mt-auto flex flex-col items-center gap-3 pt-5">
           <p className="font-serif text-xl">{formatPrice(wine.price)}</p>
           <div className="pointer-events-auto relative z-10">
-            <AddToCartButton wineName={wine.name} size="sm" tabIndex={inactive ? -1 : undefined} />
+            <AddToCartButton wine={wine} size="sm" tabIndex={inactive ? -1 : undefined} />
           </div>
         </div>
       </div>

@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { Cormorant_Garamond, Inter } from "next/font/google";
-import Navbar from "@/components/layout/Navbar";
-import Footer from "@/components/layout/Footer";
-import SmoothScroll from "@/components/layout/SmoothScroll";
+import SiteChrome from "@/components/layout/SiteChrome";
 import SplashScreen from "@/components/ui/SplashScreen";
+import { AuthProvider } from "@/contexts/AuthContext";
+import { CartProvider } from "@/contexts/CartContext";
 import "lenis/dist/lenis.css";
 import "./globals.css";
 
@@ -39,19 +39,17 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${cormorant.variable} ${inter.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col bg-ink font-sans text-white">
-        {/*
+        <AuthProvider>
+          <CartProvider>
+          {/*
           First element in <body>: server-rendered and visible by default, so it is
           painted on the very first frame of every full load, on any URL. The root
           layout persists across client-side navigation, so links never replay it.
-        */}
-        <SplashScreen />
-        <SmoothScroll>
-          <Navbar />
-          <main id="main" className="flex-1">
-            {children}
-          </main>
-          <Footer />
-        </SmoothScroll>
+          */}
+          <SplashScreen />
+            <SiteChrome>{children}</SiteChrome>
+          </CartProvider>
+        </AuthProvider>
       </body>
     </html>
   );

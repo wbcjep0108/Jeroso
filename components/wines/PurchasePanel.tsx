@@ -3,14 +3,15 @@
 import { useState } from "react";
 import { Minus, Plus } from "lucide-react";
 import AddToCartButton from "@/components/wines/AddToCartButton";
+import type { Wine } from "@/lib/wines";
 
 type PurchasePanelProps = {
-  wineName: string;
+  wine: Pick<Wine, "slug" | "name" | "price" | "image">;
   maxQuantity?: number;
 };
 
 /** Quantity stepper next to a wide outlined Add to Cart button, both in matching rounded boxes. */
-export default function PurchasePanel({ wineName, maxQuantity = 12 }: PurchasePanelProps) {
+export default function PurchasePanel({ wine, maxQuantity = 12 }: PurchasePanelProps) {
   const [quantity, setQuantity] = useState(1);
 
   const stepperButton =
@@ -47,7 +48,7 @@ export default function PurchasePanel({ wineName, maxQuantity = 12 }: PurchasePa
         </button>
       </div>
 
-      <AddToCartButton wineName={wineName} quantity={quantity} variant="outline" className="flex-1" />
+      <AddToCartButton wine={wine} quantity={quantity} variant="outline" className="flex-1" />
     </div>
   );
 }

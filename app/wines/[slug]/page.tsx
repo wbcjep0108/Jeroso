@@ -88,7 +88,7 @@ export default async function WineDetailPage({ params }: PageProps<"/wines/[slug
           <p className="mt-6 text-lg leading-relaxed text-white/80">{wine.tastingNote}</p>
 
           <div className="mt-8">
-            <PurchasePanel wineName={wine.name} />
+            <PurchasePanel wine={wine} />
           </div>
           </Reveal>
 
