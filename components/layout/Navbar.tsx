@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useEffect, useId, useRef, useState, useSyncExternalStore } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useId, useMemo, useRef, useState, useSyncExternalStore, type FormEvent } from "react";
 import { Heart, Search, ShoppingBag, User } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import Container from "@/components/layout/Container";
@@ -10,6 +10,7 @@ import Logo from "@/components/layout/Logo";
 import SectionLink from "@/components/navigation/SectionLink";
 import { isActivePath, primaryLinks, type NavLink } from "@/lib/navigation";
 import { useActiveSection } from "@/lib/sections";
+import { getAllWines, type Wine } from "@/lib/wines";
 
 type NavbarProps = {
   /**
@@ -20,7 +21,6 @@ type NavbarProps = {
 };
 
 const iconLinks: { href: string; label: string; Icon: LucideIcon }[] = [
-  { href: "/search", label: "Search", Icon: Search },
   { href: "/wishlist", label: "Wishlist", Icon: Heart },
   { href: "/cart", label: "Cart", Icon: ShoppingBag },
   { href: "/account", label: "Account", Icon: User },
@@ -86,12 +86,17 @@ function useHideOnScrollDown(): boolean {
 
 export default function Navbar({ transparent }: NavbarProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [wines, setWines] = useState<Wine[]>([]);
   const scrolled = useScrolledPast(SOLID_AFTER);
   const tuckedAway = useHideOnScrollDown();
   const toggleRef = useRef<HTMLButtonElement>(null);
   const menuId = useId();
   const activeSection = useActiveSection();
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   const isTransparentVariant = transparent ?? pathname === "/";
   const seeThrough = isTransparentVariant && !scrolled && !menuOpen;
@@ -111,7 +116,32 @@ export default function Navbar({ transparent }: NavbarProps) {
   }, [menuOpen]);
 
   const closeMenu = () => setMenuOpen(false);
-  const mobileLinks: NavLink[] = [...primaryLinks, iconLinks[0], iconLinks[3]];
+  const mobileLinks: NavLink[] = [...primaryLinks, iconLinks[0], iconLinks[2]];
+
+  useEffect(() => {
+    if (!searchOpen) return;
+    void getAllWines().then(setWines);
+    searchInputRef.current?.focus();
+  }, [searchOpen]);
+
+  const searchResults = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+    if (!query) return [];
+    return wines
+      .filter((wine) => [wine.name, wine.region, wine.appellation, wine.country, wine.tastingNote, ...(wine.tags ?? [])].join(" ").toLowerCase().includes(query))
+      .slice(0, 5);
+  }, [searchQuery, wines]);
+
+  function openSearchResult(wine: Wine) {
+    setSearchOpen(false);
+    setSearchQuery("");
+    router.push(`/wines/${wine.slug}`);
+  }
+
+  function submitSearch(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (searchResults[0]) openSearchResult(searchResults[0]);
+  }
 
   // On the homepage, section links follow the section on screen; elsewhere, the route.
   const isHome = pathname === "/";
@@ -180,6 +210,16 @@ export default function Navbar({ transparent }: NavbarProps) {
         </nav>
 
         <div className="flex items-center gap-1">
+          <button
+            type="button"
+            onClick={() => setSearchOpen((open) => !open)}
+            aria-expanded={searchOpen}
+            aria-controls="site-search-panel"
+            aria-label={searchOpen ? "Close search" : "Search wines"}
+            className={`group flex h-10 w-10 items-center justify-center rounded-full text-white/80 hover:bg-white/10 hover:text-white ${searchOpen ? "bg-white/10 text-white" : ""}`}
+          >
+            <Search aria-hidden="true" className="h-[18px] w-[18px]" strokeWidth={1.5} />
+          </button>
           <ul className="flex items-center gap-1">
             {iconLinks.map(({ href, label, Icon }) => {
               const active = isActivePath(pathname, href);
@@ -231,6 +271,25 @@ export default function Navbar({ transparent }: NavbarProps) {
           </button>
         </div>
       </Container>
+
+      <div id="site-search-panel" className={`absolute inset-x-0 top-full border-b border-ink-line bg-ink/95 shadow-xl backdrop-blur-md motion-safe:transition-[opacity,translate] motion-safe:duration-300 ${searchOpen ? "translate-y-0 opacity-100" : "pointer-events-none -translate-y-2 opacity-0"}`}>
+        <Container className="py-4">
+          <form onSubmit={submitSearch}>
+            <label htmlFor="site-search-input" className="sr-only">Search wines</label>
+            <input ref={searchInputRef} id="site-search-input" type="search" value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} placeholder="Search wines, regions, or grapes" autoComplete="off" className="h-12 w-full rounded-xl border border-white/15 bg-white/[0.05] px-4 text-sm text-white outline-none placeholder:text-white/35 focus:border-sage-light" />
+          </form>
+          {searchQuery.trim() && (
+            <div className="mt-2 overflow-hidden rounded-xl border border-white/10 bg-ink-soft">
+              {searchResults.length ? searchResults.map((wine) => (
+                <button key={wine.slug} type="button" onClick={() => openSearchResult(wine)} className="block w-full border-b border-white/10 px-4 py-3 text-left last:border-0 hover:bg-white/[0.06]">
+                  <span className="block font-serif text-lg italic">{wine.name}</span>
+                  <span className="text-xs text-white/50">{wine.region} · {wine.country}</span>
+                </button>
+              )) : <p className="px-4 py-3 text-sm text-white/50">No wines found.</p>}
+            </div>
+          )}
+        </Container>
+      </div>
 
       {/* Mobile menu: height animates via grid rows; inert when closed so it is skipped by keyboard and screen readers. */}
       <div

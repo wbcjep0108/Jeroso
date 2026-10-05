@@ -19,7 +19,6 @@ export const primaryLinks: NavLink[] = [
 ];
 
 export const accountLinks: NavLink[] = [
-  { href: "/search", label: "Search" },
   { href: "/wishlist", label: "Wishlist" },
   { href: "/account", label: "Account" },
   { href: "/cart", label: "Cart" },
