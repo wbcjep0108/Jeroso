@@ -24,7 +24,7 @@ export default function AboutSection({ context }: { context: SectionContext }) {
       id="about"
       context={context}
       eyebrow="About"
-      title="J.E.N."
+      title="Jeroso"
       intro="The journey, the essence, the nectar."
     >
       <ul className="grid gap-6 md:grid-cols-3">

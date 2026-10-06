@@ -1,8 +1,8 @@
 ﻿"use client";
 
+import FlipCard from "@/components/ui/FlipCard";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import FlipCard from "@/components/ui/FlipCard";
 import type { InsightGuide } from "@/lib/insights";
 
 type InsightFlipCardProps = {
@@ -14,7 +14,7 @@ type InsightFlipCardProps = {
 const CARD_BG = "#13120e";
 
 export default function InsightFlipCard({ guide, wineEntries }: InsightFlipCardProps) {
-  const wineNames = new Map(wineEntries.map((w) => [w.slug, w.name]));
+  const wineNames = new Map(wineEntries.map((wine) => [wine.slug, wine.name]));
 
   return (
     <FlipCard
@@ -36,67 +36,79 @@ export default function InsightFlipCard({ guide, wineEntries }: InsightFlipCardP
       shadowOpacity={0.5}
       ariaLabel={`${guide.region} — click or press Enter to see details`}
       front={
-        /* Front face: full-bleed country photo + gradient overlay + region label */
-        <div className="relative h-full w-full overflow-hidden">
+        /* Reference treatment: a moody full-bleed image with editorial overlays. */
+        <div className="relative h-full w-full overflow-hidden bg-black">
           <div
             role="img"
             aria-label={`Landscape of ${guide.country}`}
             className="absolute inset-0 h-full w-full bg-center bg-no-repeat"
             style={{ backgroundImage: `url("${guide.image}")`, backgroundSize: "cover" }}
           />
-          {/* Dark gradient so text is always legible over any photo */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-          <div className="absolute inset-x-0 bottom-0 p-6">
-            <p className="text-xs uppercase tracking-[0.2em] text-sage">{guide.country}</p>
-            <h3 className="mt-2 font-serif text-4xl italic text-white">{guide.region}</h3>
-            <p className="mt-4 text-xs text-white/50">Tap to flip</p>
+          <div className="absolute inset-0 bg-black/15" />
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/35" />
+          <div className="absolute inset-x-0 top-0 p-7 sm:p-8">
+            <h3 className="max-w-[90%] font-serif text-4xl italic leading-[0.95] tracking-[-0.03em] text-white sm:text-5xl">
+              {guide.region}
+            </h3>
+          </div>
+          <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-4 p-7 text-sm font-medium text-white/70 sm:p-8">
+            <span>{guide.country}</span>
+            <span className="text-right">Tap to flip</span>
           </div>
         </div>
       }
       back={
-        /* Back face: same content order as the original flat cards */
-        <article className="flex h-full flex-col p-6">
-          <p className="text-xs uppercase tracking-[0.2em] text-sage">{guide.country}</p>
-          <h3 className="mt-3 font-serif text-3xl italic">{guide.region}</h3>
-          <dl className="mt-5 space-y-4 text-sm leading-relaxed">
-            <div>
-              <dt className="text-white/50">Grapes</dt>
-              <dd className="mt-1 text-white/80">{guide.grapes}</dd>
-            </div>
-            <div>
-              <dt className="text-white/50">Style</dt>
-              <dd className="mt-1 text-white/80">{guide.style}</dd>
-            </div>
-            <div>
-              <dt className="text-white/50">Pairs with</dt>
-              <dd className="mt-1 text-white/80">{guide.pairings}</dd>
-            </div>
-          </dl>
-          <ul className="mt-auto space-y-1 pt-6">
-            {guide.wineSlugs
-              .filter((slug) => wineNames.has(slug))
-              .map((slug) => (
-                <li key={slug}>
-                  {/*
-                    onPointerDown stopPropagation: prevents the FlipCard root from
-                    capturing the pointer, so the link click navigates instead of
-                    flipping the card back to the front.
-                  */}
-                  <Link
-                    href={`/wines/${slug}`}
-                    onPointerDown={(e) => e.stopPropagation()}
-                    className="group inline-flex items-center gap-2 text-sm text-sage-light hover:text-white"
-                  >
-                    {wineNames.get(slug)}
-                    <ArrowRight
-                      aria-hidden="true"
-                      className="h-4 w-4 motion-safe:transition-transform group-hover:translate-x-1"
-                    />
-                  </Link>
-                </li>
-              ))}
-          </ul>
-        </article>
+        /* Reverse treatment: artwork stays visible while the original wine information remains available. */
+        <div className="relative h-full w-full overflow-hidden">
+          <div
+            role="img"
+            aria-label={`${guide.region}, ${guide.country}`}
+            className="absolute inset-0 h-full w-full bg-center bg-no-repeat"
+            style={{
+              backgroundImage: `url("${guide.image}")`,
+              backgroundSize: "cover",
+              filter: "grayscale(1) invert(1)",
+            }}
+          />
+          <div className="absolute inset-0 bg-black/65" />
+          <article className="relative flex h-full flex-col p-6 text-white sm:p-7">
+            <p className="text-xs uppercase tracking-[0.2em] text-sage">{guide.country}</p>
+            <h3 className="mt-3 font-serif text-3xl italic">{guide.region}</h3>
+            <dl className="mt-5 space-y-4 text-sm leading-relaxed">
+              <div>
+                <dt className="text-white/60">Grapes</dt>
+                <dd className="mt-1 text-white/85">{guide.grapes}</dd>
+              </div>
+              <div>
+                <dt className="text-white/60">Style</dt>
+                <dd className="mt-1 text-white/85">{guide.style}</dd>
+              </div>
+              <div>
+                <dt className="text-white/60">Pairs with</dt>
+                <dd className="mt-1 text-white/85">{guide.pairings}</dd>
+              </div>
+            </dl>
+            <ul className="mt-auto space-y-1 pt-6">
+              {guide.wineSlugs
+                .filter((slug) => wineNames.has(slug))
+                .map((slug) => (
+                  <li key={slug}>
+                    <Link
+                      href={`/wines/${slug}`}
+                      onPointerDown={(event) => event.stopPropagation()}
+                      className="group inline-flex items-center gap-2 text-sm text-sage-light hover:text-white"
+                    >
+                      {wineNames.get(slug)}
+                      <ArrowRight
+                        aria-hidden="true"
+                        className="h-4 w-4 motion-safe:transition-transform group-hover:translate-x-1"
+                      />
+                    </Link>
+                  </li>
+                ))}
+            </ul>
+          </article>
+        </div>
       }
     />
   );
