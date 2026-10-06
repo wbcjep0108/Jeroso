@@ -6,7 +6,7 @@ import Footer from "@/components/layout/Footer";
 import Navbar from "@/components/layout/Navbar";
 import SmoothScroll from "@/components/layout/SmoothScroll";
 
-const authRoutes = new Set(["/login", "/registration"]);
+const authRoutes = new Set(["/login", "/registration", "/forgot-password"]);
 
 export default function SiteChrome({ children }: { children: ReactNode }) {
   const pathname = usePathname();
