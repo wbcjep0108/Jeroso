@@ -67,7 +67,7 @@ export default async function WineDetailPage({ params }: PageProps<"/wines/[slug
                 {displayWineMeta(wine, { withCountry: true })}
               </p>
             </div>
-            <WishlistButton wineName={wine.name} />
+            <WishlistButton wineSlug={wine.slug} wineName={wine.name} />
           </div>
 
           <p className="mt-6 font-serif text-4xl">{formatPrice(wine.price)}</p>

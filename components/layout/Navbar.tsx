@@ -155,6 +155,17 @@ export default function Navbar({ transparent }: NavbarProps) {
   const barHeight = isTransparentVariant ? (seeThrough ? "h-22" : "h-16") : "h-18";
 
   return (
+    <>
+      <button
+        type="button"
+        aria-label="Close search"
+        aria-hidden={!searchOpen}
+        tabIndex={searchOpen ? 0 : -1}
+        onClick={() => setSearchOpen(false)}
+        className={`fixed inset-0 z-40 cursor-default bg-black/[0.04] backdrop-blur-[2px] motion-safe:transition-[opacity,backdrop-filter] motion-safe:duration-300 ${
+          searchOpen ? "opacity-100" : "pointer-events-none opacity-0 backdrop-blur-none"
+        }`}
+      />
     <header
       className={[
         "inset-x-0 top-0 z-50 border-b",
@@ -185,13 +196,13 @@ export default function Navbar({ transparent }: NavbarProps) {
             {primaryLinks.map((link) => {
               const active = isLinkActive(link);
               const className = [
-                      "relative py-2 text-sm tracking-wide motion-safe:transition-colors motion-safe:duration-300",
-                      "after:absolute after:inset-x-0 after:-bottom-0.5 after:h-px after:origin-left after:bg-sage-light",
-                      "motion-safe:after:transition-transform motion-safe:after:duration-500 motion-safe:after:ease-[cubic-bezier(0.22,1,0.36,1)]",
-                      active
-                        ? "text-white after:scale-x-100"
-                        : "text-white/70 after:scale-x-0 hover:text-white hover:after:scale-x-100 focus-visible:after:scale-x-100",
-                    ].join(" ");
+                "relative py-2 text-sm tracking-wide motion-safe:transition-colors motion-safe:duration-300",
+                "after:absolute after:inset-x-0 after:-bottom-0.5 after:h-px after:origin-left after:bg-sage-light",
+                "motion-safe:after:transition-transform motion-safe:after:duration-500 motion-safe:after:ease-[cubic-bezier(0.22,1,0.36,1)]",
+                active
+                  ? "text-white after:scale-x-100"
+                  : "text-white/70 after:scale-x-0 hover:text-white hover:after:scale-x-100 focus-visible:after:scale-x-100",
+              ].join(" ");
               return (
                 <li key={link.href}>
                   {link.section ? (
@@ -272,11 +283,11 @@ export default function Navbar({ transparent }: NavbarProps) {
         </div>
       </Container>
 
-      <div id="site-search-panel" className={`absolute inset-x-0 top-full border-b border-ink-line bg-ink/95 shadow-xl backdrop-blur-md motion-safe:transition-[opacity,translate] motion-safe:duration-300 ${searchOpen ? "translate-y-0 opacity-100" : "pointer-events-none -translate-y-2 opacity-0"}`}>
+      <div id="site-search-panel" className={`absolute inset-x-0 top-full bg-transparent motion-safe:transition-[opacity,translate] motion-safe:duration-300 ${searchOpen ? "translate-y-0 opacity-100" : "pointer-events-none -translate-y-2 opacity-0"}`}>
         <Container className="py-4">
           <form onSubmit={submitSearch}>
             <label htmlFor="site-search-input" className="sr-only">Search wines</label>
-            <input ref={searchInputRef} id="site-search-input" type="search" value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} placeholder="Search wines, regions, or grapes" autoComplete="off" className="h-12 w-full rounded-xl border border-white/15 bg-white/[0.05] px-4 text-sm text-white outline-none placeholder:text-white/35 focus:border-sage-light" />
+            <input ref={searchInputRef} id="site-search-input" type="search" value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} placeholder="Search wines, or regions" autoComplete="off" className="h-12 w-full rounded-xl border border-white/30 bg-ink/80 px-4 text-sm text-white shadow-lg backdrop-blur-md outline-none placeholder:text-white/60 focus:border-sage-light" />
           </form>
           {searchQuery.trim() && (
             <div className="mt-2 overflow-hidden rounded-xl border border-white/10 bg-ink-soft">
@@ -353,5 +364,6 @@ export default function Navbar({ transparent }: NavbarProps) {
         </nav>
       </div>
     </header>
+    </>
   );
 }

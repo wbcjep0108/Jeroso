@@ -4,6 +4,7 @@ import SiteChrome from "@/components/layout/SiteChrome";
 import SplashScreen from "@/components/ui/SplashScreen";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { CartProvider } from "@/contexts/CartContext";
+import { WishlistProvider } from "@/contexts/WishlistContext";
 import "lenis/dist/lenis.css";
 import "./globals.css";
 
@@ -41,6 +42,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="flex min-h-full flex-col bg-ink font-sans text-white">
         <AuthProvider>
           <CartProvider>
+            <WishlistProvider>
           {/*
           First element in <body>: server-rendered and visible by default, so it is
           painted on the very first frame of every full load, on any URL. The root
@@ -48,6 +50,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           */}
           <SplashScreen />
             <SiteChrome>{children}</SiteChrome>
+            </WishlistProvider>
           </CartProvider>
         </AuthProvider>
       </body>
