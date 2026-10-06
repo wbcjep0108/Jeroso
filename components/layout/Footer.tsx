@@ -53,7 +53,7 @@ export default function Footer() {
 
       <div className="border-t border-ink-line">
         <Container className="flex flex-col gap-2 py-6 text-xs text-white/50 sm:flex-row sm:items-center sm:justify-between">
-          <p>&copy; {year} Jeroso. All rights reserved.</p>
+          <p>&copy; {year} Jeroso. By Wilhem Bruce Cuevas. All rights reserved.</p>
           <p>Must be 18 or older to purchase alcohol. Please enjoy responsibly.</p>
         </Container>
       </div>

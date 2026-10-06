@@ -9,12 +9,6 @@ import {
   type ContactTopic,
 } from "@/lib/site-info";
 
-/*
-  Contact form, Phase 1: fields, labels and topic prefill from ?topic=...
-  Sending is not implemented yet (Phase 2: Server Action, validation, spam checks,
-  email), so the submit button is disabled and says so.
-*/
-
 const fieldClass =
   "mt-2 block w-full rounded-xl border border-white/15 bg-white/[0.03] px-4 py-3 text-white placeholder:text-white/30 focus-visible:border-sage-light focus-visible:outline-none motion-safe:transition-colors";
 const labelClass = "text-sm text-white/70";
@@ -26,6 +20,8 @@ function topicFromParam(value: string | null): ContactTopic {
 function FormView({ initialTopic }: { initialTopic: ContactTopic }) {
   const id = useId();
   const [topic, setTopic] = useState<ContactTopic>(initialTopic);
+  const [status, setStatus] = useState<"idle" | "sending" | "success" | "error">("idle");
+  const [feedback, setFeedback] = useState("");
   // Follow later URL changes (e.g. "Ask about a private tasting") without overriding the visitor's own choice otherwise.
   const [seenTopic, setSeenTopic] = useState<ContactTopic>(initialTopic);
   if (initialTopic !== seenTopic) {
@@ -33,17 +29,49 @@ function FormView({ initialTopic }: { initialTopic: ContactTopic }) {
     setTopic(initialTopic);
   }
 
-  function onSubmit(e: FormEvent<HTMLFormElement>) {
+  async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    const form = e.currentTarget;
+    const formData = new FormData(form);
+
+    setStatus("sending");
+    setFeedback("");
+
+    try {
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: formData.get("name"),
+          email: formData.get("email"),
+          topic: formData.get("topic"),
+          message: formData.get("message"),
+          website: formData.get("website"),
+        }),
+      });
+      const result = (await response.json()) as { success?: boolean; error?: string };
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || "Your message could not be sent. Please try again.");
+      }
+
+      form.reset();
+      setTopic(initialTopic);
+      setStatus("success");
+      setFeedback("Thanks — your message has been sent.");
+    } catch (error) {
+      setStatus("error");
+      setFeedback(error instanceof Error ? error.message : "Your message could not be sent. Please try again.");
+    }
   }
 
   return (
-    <form onSubmit={onSubmit} noValidate className="grid gap-5 sm:grid-cols-2">
+    <form onSubmit={onSubmit} className="grid gap-5 sm:grid-cols-2">
       <div>
         <label htmlFor={`${id}-name`} className={labelClass}>
           Name
         </label>
-        <input id={`${id}-name`} name="name" type="text" autoComplete="name" maxLength={100} className={fieldClass} />
+        <input id={`${id}-name`} name="name" type="text" autoComplete="name" minLength={2} maxLength={100} className={fieldClass} required />
       </div>
       <div>
         <label htmlFor={`${id}-email`} className={labelClass}>
@@ -56,6 +84,7 @@ function FormView({ initialTopic }: { initialTopic: ContactTopic }) {
           autoComplete="email"
           maxLength={254}
           className={fieldClass}
+          required
         />
       </div>
       <div className="sm:col-span-2">
@@ -82,20 +111,28 @@ function FormView({ initialTopic }: { initialTopic: ContactTopic }) {
         <label htmlFor={`${id}-message`} className={labelClass}>
           Message
         </label>
-        <textarea id={`${id}-message`} name="message" rows={5} maxLength={2000} className={`${fieldClass} resize-y`} />
+        <textarea id={`${id}-message`} name="message" rows={5} minLength={10} maxLength={2000} className={`${fieldClass} resize-y`} required />
+      </div>
+      <div className="hidden" aria-hidden="true">
+        <label htmlFor={`${id}-website`}>Website</label>
+        <input id={`${id}-website`} name="website" type="text" tabIndex={-1} autoComplete="off" />
       </div>
       <div className="flex flex-col gap-3 sm:col-span-2 sm:flex-row sm:items-center">
-        {/* PLACEHOLDER: enabled in Phase 2 once the Server Action and email sending exist. */}
         <button
           type="submit"
-          disabled
-          aria-describedby={`${id}-note`}
-          className="inline-flex h-12 items-center justify-center rounded-xl border border-white/15 bg-white/[0.03] px-6 text-sm text-white/60 disabled:cursor-not-allowed"
+          disabled={status === "sending"}
+          aria-describedby={`${id}-status`}
+          className="inline-flex h-12 items-center justify-center rounded-xl bg-white px-6 text-sm font-medium text-ink hover:bg-sage-light disabled:cursor-wait disabled:opacity-60 motion-safe:transition-colors"
         >
-          Sending available soon
+          {status === "sending" ? "Sending…" : "Send message"}
         </button>
-        <p id={`${id}-note`} className="text-sm text-white/50">
-          The form is not connected yet. Messages cannot be sent at the moment.
+        <p
+          id={`${id}-status`}
+          role="status"
+          aria-live="polite"
+          className={`text-sm ${status === "error" ? "text-red-300" : status === "success" ? "text-sage-light" : "text-white/50"}`}
+        >
+          {feedback || "We’ll reply to the email address you provide."}
         </p>
       </div>
     </form>
