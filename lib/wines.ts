@@ -50,12 +50,6 @@ export const characteristicLabels: Record<keyof WineCharacteristics, string> = {
   alcohol: "Alcohol",
 };
 
-// Placeholder artwork. Replace with real product photos (see README notes in chat).
-const BOTTLE_RED = "/wines/bottle-red.svg";
-const BOTTLE_WHITE = "/wines/bottle-white.svg";
-const BOTTLE_SPARKLING = "/wines/bottle-sparkling.svg";
-const LABEL_CLOSEUP = "/wines/label-closeup.svg";
-
 const sampleWines: Wine[] = [
   {
     slug: "valle-oscuro-reserva-2019",
@@ -70,8 +64,8 @@ const sampleWines: Wine[] = [
     tastingNote: "Tempranillo blend, oak-aged.",
     story:
       "A Reserva from Rioja DOCa in northern Spain, made from a Tempranillo-based blend and aged in oak before release.",
-    image: BOTTLE_RED, // TODO: replace with real bottle photo
-    gallery: [LABEL_CLOSEUP],
+    image: "/wines/Marques.png",
+    gallery: ["/wines/Marques1.png"],
     tags: ["Sommelier's Pick", "Romantic Pick"],
     characteristics: { flavorIntensity: 4, body: 5, tannin: 4, acidity: 3, alcohol: 4 }, // TODO: review ratings
     featured: true,
@@ -90,8 +84,8 @@ const sampleWines: Wine[] = [
     tastingNote: "Sauvignon Blanc.",
     story:
       "A white Sancerre AOC from the eastern Loire Valley in France, made from Sauvignon Blanc.",
-    image: BOTTLE_WHITE, // TODO: replace with real bottle photo
-    gallery: [LABEL_CLOSEUP],
+    image: "/wines/Henri.png",
+    gallery: ["/wines/Henri1.png"],
     tags: ["Sommelier's Pick"],
     characteristics: { flavorIntensity: 3, body: 2, tannin: 1, acidity: 5, alcohol: 2 }, // TODO: review ratings
     featured: true,
@@ -109,8 +103,8 @@ const sampleWines: Wine[] = [
     tastingNote: "Nebbiolo.",
     story:
       "A red Barolo DOCG from Piedmont in northwest Italy, made from Nebbiolo.",
-    image: BOTTLE_RED, // TODO: replace with real bottle photo
-    gallery: [LABEL_CLOSEUP],
+    image: "/wines/Pio.png",
+    gallery: ["/wines/Pio1.png"],
     tags: ["Sommelier's Pick"],
     characteristics: { flavorIntensity: 5, body: 5, tannin: 5, acidity: 4, alcohol: 4 }, // TODO: review ratings
     featured: true,
@@ -128,8 +122,8 @@ const sampleWines: Wine[] = [
     tastingNote: "Chardonnay, unoaked.",
     story:
       "A Chablis Premier Cru from the Montmains vineyard in northern Burgundy, France, made from Chardonnay in an unoaked style.",
-    image: BOTTLE_WHITE, // TODO: replace with real bottle photo
-    gallery: [LABEL_CLOSEUP],
+    image: "/wines/William.png",
+    gallery: ["/wines/William1.png"],
     characteristics: { flavorIntensity: 3, body: 3, tannin: 1, acidity: 5, alcohol: 2 }, // TODO: review ratings
   },
   {
@@ -145,8 +139,8 @@ const sampleWines: Wine[] = [
     tastingNote: "Riesling, off-dry.",
     story:
       "A Riesling Kabinett from the Wehlener Sonnenuhr vineyard in Germany's Mosel region, made in an off-dry style.",
-    image: BOTTLE_WHITE, // TODO: replace with real bottle photo
-    gallery: [LABEL_CLOSEUP],
+    image: "/wines/J.J.png",
+    gallery: ["/wines/J.J1.png"],
     characteristics: { flavorIntensity: 3, body: 1, tannin: 1, acidity: 5, alcohol: 1 }, // TODO: review ratings
   },
   {
@@ -162,8 +156,8 @@ const sampleWines: Wine[] = [
     tastingNote: "Touriga Nacional blend.",
     story:
       "A red Douro DOC from northern Portugal, made from a blend led by Touriga Nacional.",
-    image: BOTTLE_RED, // TODO: replace with real bottle photo
-    gallery: [LABEL_CLOSEUP],
+    image: "/wines/Quinta.png",
+    gallery: ["/wines/Quinta1.png"],
     characteristics: { flavorIntensity: 4, body: 4, tannin: 4, acidity: 3, alcohol: 4 }, // TODO: review ratings
   },
   {
@@ -179,8 +173,8 @@ const sampleWines: Wine[] = [
     tastingNote: "Traditional method, brut nature.",
     story:
       "A Cava DO from Spain, a traditional-method sparkling wine made in the brut nature style.",
-    image: BOTTLE_SPARKLING, // TODO: replace with real bottle photo
-    gallery: [LABEL_CLOSEUP],
+    image: "/wines/Juve.png",
+    gallery: ["/wines/Juve1.png"],
     tags: ["Romantic Pick"],
     characteristics: { flavorIntensity: 3, body: 2, tannin: 1, acidity: 4, alcohol: 2 }, // TODO: review ratings
     featured: true,
@@ -198,8 +192,8 @@ const sampleWines: Wine[] = [
     tastingNote: "Traditional method sparkling.",
     story:
       "A Cremant d'Alsace AOC from Alsace in northeastern France, a sparkling wine made by the traditional method.",
-    image: BOTTLE_SPARKLING, // TODO: replace with real bottle photo
-    gallery: [LABEL_CLOSEUP],
+    image: "/wines/Pierre.png",
+    gallery: ["/wines/Pierre1.png"],
     characteristics: { flavorIntensity: 2, body: 2, tannin: 1, acidity: 4, alcohol: 2 }, // TODO: review ratings
   },
   {
@@ -215,8 +209,8 @@ const sampleWines: Wine[] = [
     tastingNote: "Pinot Noir.",
     story:
       "A red wine from the Bannockburn area of Central Otago in New Zealand, made from Pinot Noir.",
-    image: BOTTLE_RED, // TODO: replace with real bottle photo
-    gallery: [LABEL_CLOSEUP],
+    image: "/wines/Felton.png",
+    gallery: ["/wines/Felton1.png"],
     characteristics: { flavorIntensity: 3, body: 3, tannin: 2, acidity: 4, alcohol: 3 }, // TODO: review ratings
     featured: true,
   },
@@ -233,8 +227,8 @@ const sampleWines: Wine[] = [
     tastingNote: "Malbec.",
     story:
       "A red wine from Mendoza, Argentina's largest wine region, made from Malbec.",
-    image: BOTTLE_RED, // TODO: replace with real bottle photo
-    gallery: [LABEL_CLOSEUP],
+    image: "/wines/Catena.png",
+    gallery: ["/wines/Catena1.png"],
     tags: ["Romantic Pick"],
     characteristics: { flavorIntensity: 4, body: 4, tannin: 3, acidity: 3, alcohol: 4 }, // TODO: review ratings
   },

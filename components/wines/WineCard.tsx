@@ -43,14 +43,14 @@ export default function WineCard({ wine, size = "sm", inactive = false }: WineCa
       <article className={`${cardShell} bg-ink-soft`}>
         <CardLink wine={wine} inactive={inactive} />
         <div className="pointer-events-none relative grid items-center gap-8 p-6 sm:grid-cols-[auto_1fr] sm:p-10">
-          <div className="relative mx-auto flex h-80 w-28 items-end justify-center sm:h-[420px] sm:w-36">
+          <div className="relative mx-auto h-96 w-64 sm:h-[460px] sm:w-72">
             <Image
               src={wine.image}
               alt={`Bottle of ${wine.name}`}
-              width={200}
-              height={600}
+              width={1080}
+              height={1350}
               draggable={false}
-              className="h-full w-auto drop-shadow-[0_30px_40px_rgba(0,0,0,0.6)]"
+              className="relative h-full w-auto max-w-none -translate-x-4 drop-shadow-[0_30px_40px_rgba(0,0,0,0.6)] sm:-translate-x-6"
             />
           </div>
 
@@ -82,14 +82,14 @@ export default function WineCard({ wine, size = "sm", inactive = false }: WineCa
     <article className={`${cardShell} h-full bg-ink-soft/60`}>
       <CardLink wine={wine} inactive={inactive} />
       <div className="pointer-events-none relative flex h-full flex-col items-center p-6 text-center">
-        <div className="relative flex h-56 w-20 items-end justify-center">
+        <div className="relative h-64 w-32">
           <Image
             src={wine.image}
             alt={`Bottle of ${wine.name}`}
-            width={200}
-            height={600}
+            width={1080}
+            height={1350}
             draggable={false}
-            className="h-full w-auto opacity-90"
+            className="h-full w-auto max-w-none -translate-x-6 opacity-90 sm:-translate-x-9"
           />
         </div>
         <h3 className="mt-5 font-serif text-2xl italic leading-tight group-hover:text-sage-light">
