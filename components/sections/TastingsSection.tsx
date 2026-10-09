@@ -24,7 +24,7 @@ function PrivateTastingLink({ context }: { context: SectionContext }) {
       {label}
     </SectionLink>
   ) : (
-    <Link href="/contact?topic=private-tasting" className={ctaClass}>
+    <Link href="/?topic=private-tasting#contact" className={ctaClass}>
       {label}
     </Link>
   );

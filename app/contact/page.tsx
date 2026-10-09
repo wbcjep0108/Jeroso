@@ -1,12 +1,17 @@
 import type { Metadata } from "next";
-import ContactSection from "@/components/sections/ContactSection";
+import { redirect } from "next/navigation";
 
 export const metadata: Metadata = {
   title: "Contact",
   description: "Contact Jeroso about a wine or a private tasting.",
 };
 
-// Same section component as the homepage, rendered as the page's main heading.
-export default function ContactPage() {
-  return <ContactSection context="page" />;
+type ContactPageProps = {
+  searchParams: Promise<{ topic?: string | string[] }>;
+};
+
+export default async function ContactPage({ searchParams }: ContactPageProps) {
+  const { topic } = await searchParams;
+  const value = Array.isArray(topic) ? topic[0] : topic;
+  redirect(value ? `/?topic=${encodeURIComponent(value)}#contact` : "/#contact");
 }

@@ -3,13 +3,10 @@
  * "To be filled in" with the real detail before launch.
  */
 
-export const TO_BE_FILLED = "To be filled in";
 
 export const siteInfo = {
-  address: TO_BE_FILLED,
-  phone: TO_BE_FILLED,
-  email: TO_BE_FILLED,
-  hours: TO_BE_FILLED,
+  email: "bcueva1217@gmail.com",
+  hours: "Business Hours",
 };
 
 /* ---------- contact form topics ---------- */

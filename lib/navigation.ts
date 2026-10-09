@@ -15,7 +15,7 @@ export const primaryLinks: NavLink[] = [
   { href: "/tastings", label: "Tastings", section: "tastings" },
   { href: "/insights", label: "Insights", section: "insights" },
   { href: "/about", label: "About", section: "about" },
-  { href: "/contact", label: "Contact", section: "contact" },
+  { href: "/#contact", label: "Contact", section: "contact" },
 ];
 
 export const accountLinks: NavLink[] = [
