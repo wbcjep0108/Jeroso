@@ -285,6 +285,11 @@ body {
   color: #ffffff;
 }
 
+body:has([data-not-found]) [data-site-chrome-header],
+body:has([data-not-found]) [data-site-chrome-footer] {
+  display: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

@@ -14,11 +14,19 @@ export default function SiteChrome({ children }: { children: ReactNode }) {
 
   return (
     <SmoothScroll>
-      {!isAuthPage && <Navbar />}
+      {!isAuthPage && (
+        <div data-site-chrome-header className="contents">
+          <Navbar />
+        </div>
+      )}
       <main id="main" className="flex-1">
         {children}
       </main>
-      {!isAuthPage && <Footer />}
+      {!isAuthPage && (
+        <div data-site-chrome-footer className="contents">
+          <Footer />
+        </div>
+      )}
     </SmoothScroll>
   );
 }
