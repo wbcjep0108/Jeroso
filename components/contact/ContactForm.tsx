@@ -2,6 +2,7 @@
 
 import { Suspense, useId, useState, type FormEvent } from "react";
 import { useSearchParams } from "next/navigation";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   CONTACT_TOPICS,
   DEFAULT_CONTACT_TOPIC,
@@ -17,8 +18,9 @@ function topicFromParam(value: string | null): ContactTopic {
   return isContactTopic(value) ? value : DEFAULT_CONTACT_TOPIC;
 }
 
-function FormView({ initialTopic }: { initialTopic: ContactTopic }) {
+function FormView({ initialTopic, initialEmail }: { initialTopic: ContactTopic; initialEmail: string }) {
   const id = useId();
+  const [email, setEmail] = useState(initialEmail);
   const [topic, setTopic] = useState<ContactTopic>(initialTopic);
   const [status, setStatus] = useState<"idle" | "sending" | "success" | "error">("idle");
   const [feedback, setFeedback] = useState("");
@@ -56,6 +58,7 @@ function FormView({ initialTopic }: { initialTopic: ContactTopic }) {
       }
 
       form.reset();
+      setEmail(initialEmail);
       setTopic(initialTopic);
       setStatus("success");
       setFeedback("Thanks — your message has been sent.");
@@ -83,6 +86,8 @@ function FormView({ initialTopic }: { initialTopic: ContactTopic }) {
           type="email"
           autoComplete="email"
           maxLength={254}
+          value={email}
+          onChange={(event) => setEmail(event.target.value)}
           className={fieldClass}
           required
         />
@@ -139,16 +144,30 @@ function FormView({ initialTopic }: { initialTopic: ContactTopic }) {
   );
 }
 
-function FormWithParams() {
+function FormWithParams({ initialEmail, formKey }: { initialEmail: string; formKey: string }) {
   const searchParams = useSearchParams();
-  return <FormView initialTopic={topicFromParam(searchParams.get("topic"))} />;
+  return (
+    <FormView
+      key={formKey}
+      initialTopic={topicFromParam(searchParams.get("topic"))}
+      initialEmail={initialEmail}
+    />
+  );
 }
 
 /** useSearchParams needs a Suspense boundary; the fallback is the same form, so nothing shifts. */
 export default function ContactForm() {
+  const { user } = useAuth();
+  const initialEmail = user?.email ?? "";
+  const formKey = `${user?.uid ?? "guest"}:${initialEmail}`;
+
   return (
-    <Suspense fallback={<FormView initialTopic={DEFAULT_CONTACT_TOPIC} />}>
-      <FormWithParams />
+    <Suspense
+      fallback={
+        <FormView key={formKey} initialTopic={DEFAULT_CONTACT_TOPIC} initialEmail={initialEmail} />
+      }
+    >
+      <FormWithParams initialEmail={initialEmail} formKey={formKey} />
     </Suspense>
   );
 }
