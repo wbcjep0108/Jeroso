@@ -35,9 +35,16 @@ function ContactDetailsAndForm() {
 }
 
 export default function ContactSection({ context }: { context: SectionContext }) {
+  const Heading = context === "page" ? "h1" : "h2";
+
   return (
-    <section id="contact" data-contact-context={context} tabIndex={-1} className="scroll-mt-24 focus:outline-none">
-      <h2 className="sr-only">Get in touch</h2>
+    <section
+      id="contact"
+      aria-labelledby="contact-heading"
+      data-contact-context={context}
+      tabIndex={-1}
+      className="scroll-mt-24 focus:outline-none"
+    >
       <div className="relative z-0 h-[50vh] min-h-[320px] max-h-[560px] w-full">
         <AnimatedFooter
           headingLines={[]}
@@ -54,7 +61,10 @@ export default function ContactSection({ context }: { context: SectionContext })
       </div>
       <Container className="relative z-10 py-16 sm:py-24">
         <Reveal>
-          <p className="max-w-2xl leading-relaxed text-white/70">
+          <Heading id="contact-heading" className="font-serif text-4xl italic sm:text-5xl">
+            Get in touch
+          </Heading>
+          <p className="mt-5 max-w-2xl leading-relaxed text-white/70">
             Questions about a wine, or planning a private tasting? Send us a note.
           </p>
         </Reveal>
