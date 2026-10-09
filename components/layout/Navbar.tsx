@@ -8,6 +8,7 @@ import type { LucideIcon } from "lucide-react";
 import Container from "@/components/layout/Container";
 import Logo from "@/components/layout/Logo";
 import SectionLink from "@/components/navigation/SectionLink";
+import { useCart } from "@/contexts/CartContext";
 import { isActivePath, primaryLinks, type NavLink } from "@/lib/navigation";
 import { useActiveSection } from "@/lib/sections";
 import { getAllWines, type Wine } from "@/lib/wines";
@@ -87,6 +88,7 @@ function useHideOnScrollDown(): boolean {
 export default function Navbar({ transparent }: NavbarProps) {
   const pathname = usePathname();
   const router = useRouter();
+  const { items: cartItems } = useCart();
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -97,6 +99,7 @@ export default function Navbar({ transparent }: NavbarProps) {
   const menuId = useId();
   const activeSection = useActiveSection();
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const cartQuantity = cartItems.reduce((total, item) => total + item.quantity, 0);
 
   const isTransparentVariant = transparent ?? pathname === "/";
   const seeThrough = isTransparentVariant && !scrolled && !menuOpen;
@@ -238,19 +241,54 @@ export default function Navbar({ transparent }: NavbarProps) {
                 <li key={href} className={href === "/search" || href === "/account" ? "hidden sm:block" : ""}>
                   <Link
                     href={href}
-                    aria-label={label}
+                    aria-label={href === "/cart" && cartQuantity > 0 ? `${label}, ${cartQuantity} items` : label}
                     aria-current={active ? "page" : undefined}
                     className={[
-                      "group flex h-10 w-10 items-center justify-center rounded-full",
+                      "group relative flex h-10 w-10 items-center justify-center rounded-full",
                       "motion-safe:transition-colors motion-safe:duration-300",
                       active ? "bg-white/10 text-white" : "text-white/80 hover:bg-white/10 hover:text-white",
                     ].join(" ")}
                   >
-                    <Icon
-                      aria-hidden="true"
-                      className={`h-[18px] w-[18px] motion-safe:transition-transform motion-safe:duration-300 motion-safe:group-hover:scale-110 ${EASE}`}
-                      strokeWidth={1.5}
-                    />
+                    <span
+                      data-icon-wrapper
+                      className="relative inline-flex overflow-visible"
+                      style={{ width: "18px", height: "18px" }}
+                    >
+                      <Icon
+                        aria-hidden="true"
+                        className={`h-[18px] w-[18px] motion-safe:transition-transform motion-safe:duration-300 motion-safe:group-hover:scale-110 ${EASE}`}
+                        strokeWidth={1.5}
+                      />
+                      {href === "/cart" && cartQuantity > 0 && (
+                        <span
+                          aria-hidden="true"
+                          className="pointer-events-none bg-sage-light text-ink"
+                          style={{
+                            position: "absolute",
+                            right: "-9px",
+                            top: "-9px",
+                            zIndex: 10,
+                            display: "flex",
+                            width: "18px",
+                            height: "18px",
+                            minWidth: "18px",
+                            minHeight: "18px",
+                            flexShrink: 0,
+                            aspectRatio: "1 / 1",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            boxSizing: "border-box",
+                            borderRadius: "9999px",
+                            padding: 0,
+                            lineHeight: 1,
+                            fontSize: cartQuantity > 9 ? "9px" : "11px",
+                            fontWeight: 600,
+                          }}
+                        >
+                          {cartQuantity > 9 ? "9+" : cartQuantity}
+                        </span>
+                      )}
+                    </span>
                   </Link>
                 </li>
               );

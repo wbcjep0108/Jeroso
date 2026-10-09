@@ -1,6 +1,5 @@
 "use client";
 
-import * as React from "react";
 import { useEffect, useMemo, useRef } from "react";
 import gsap from "gsap";
 import { useTheme } from "next-themes";
