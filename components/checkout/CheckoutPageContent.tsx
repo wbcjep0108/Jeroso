@@ -11,6 +11,7 @@ import { formatPrice } from "@/lib/wines";
 
 const fieldClass = "mt-2 block w-full rounded-xl border border-white/15 bg-white/[0.03] px-4 py-3 text-white placeholder:text-white/30 focus-visible:border-sage-light focus-visible:outline-none motion-safe:transition-colors";
 const labelClass = "text-sm text-white/70";
+const digitsOnly = /^\d+$/;
 
 const initialDetails: CheckoutDetails = {
   firstName: "",
@@ -61,6 +62,12 @@ function CheckoutContent() {
     if (Object.values(normalizedDetails).some((value) => !value)) {
       setStatus("error");
       setMessage("Please complete every delivery field.");
+      return;
+    }
+
+    if (!digitsOnly.test(normalizedDetails.phone) || !digitsOnly.test(normalizedDetails.postalCode)) {
+      setStatus("error");
+      setMessage("Phone number and postal code must contain digits only.");
       return;
     }
 
@@ -133,10 +140,10 @@ function CheckoutContent() {
               <label className={labelClass}>First name<input required aria-required="true" autoComplete="given-name" value={details.firstName} onChange={(event) => updateField("firstName", event.target.value)} className={fieldClass} /></label>
               <label className={labelClass}>Last name<input required aria-required="true" autoComplete="family-name" value={details.lastName} onChange={(event) => updateField("lastName", event.target.value)} className={fieldClass} /></label>
               <label className={labelClass}>Email<input required aria-required="true" type="email" autoComplete="email" value={details.email} onChange={(event) => updateField("email", event.target.value)} className={fieldClass} /></label>
-              <label className={labelClass}>Phone<input required aria-required="true" type="tel" autoComplete="tel" value={details.phone} onChange={(event) => updateField("phone", event.target.value)} className={fieldClass} /></label>
+              <label className={labelClass}>Phone<input required aria-required="true" type="text" inputMode="numeric" pattern="[0-9]*" maxLength={15} autoComplete="tel" value={details.phone} onChange={(event) => updateField("phone", event.target.value.replace(/\D/g, ""))} className={fieldClass} /></label>
               <label className={`${labelClass} sm:col-span-2`}>Address<input required aria-required="true" autoComplete="street-address" value={details.address} onChange={(event) => updateField("address", event.target.value)} className={fieldClass} /></label>
               <label className={labelClass}>City / municipality<input required aria-required="true" autoComplete="address-level2" value={details.city} onChange={(event) => updateField("city", event.target.value)} className={fieldClass} /></label>
-              <label className={labelClass}>Postal code<input required aria-required="true" autoComplete="postal-code" value={details.postalCode} onChange={(event) => updateField("postalCode", event.target.value)} className={fieldClass} /></label>
+              <label className={labelClass}>Postal code<input required aria-required="true" type="text" inputMode="numeric" pattern="[0-9]*" maxLength={10} autoComplete="postal-code" value={details.postalCode} onChange={(event) => updateField("postalCode", event.target.value.replace(/\D/g, ""))} className={fieldClass} /></label>
             </div>
             <label className="mt-7 flex items-start gap-3 text-sm leading-relaxed text-white/65">
               <input required aria-required="true" checked={ageConfirmed} onChange={(event) => setAgeConfirmed(event.target.checked)} type="checkbox" className="mt-1 h-4 w-4 accent-[#bac5ba]" />
