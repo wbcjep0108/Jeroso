@@ -3,13 +3,16 @@ import { ArrowRight } from "lucide-react";
 import Reveal from "@/components/motion/Reveal";
 import SectionShell, { type SectionContext } from "@/components/sections/SectionShell";
 import InsightFlipCard from "@/components/sections/InsightFlipCard";
+import InsightsHomeExperience from "@/components/sections/InsightsHomeExperience";
 import { getInsightGuides } from "@/lib/insights";
 import { getAllWines } from "@/lib/wines";
 
-/** Guides shown on the homepage; /insights shows all of them. */
-const HOME_LIMIT = 6;
+const HOME_LIMIT = 3;
+const SECTION_EYEBROW = "Insights";
+const SECTION_TITLE = "Know the regions";
+const SECTION_INTRO = "Short guides to the places behind our wines: where they are, which grapes they grow, and what to pour them with.";
 
-export default async function InsightsSection({ context }: { context: SectionContext }) {
+export default async function InsightsSection({ context, showHeader = true }: { context: SectionContext; showHeader?: boolean }) {
   const [allGuides, wines] = await Promise.all([getInsightGuides(), getAllWines()]);
   /*
     Convert to a plain array of { slug, name } objects so it can be serialized
@@ -17,19 +20,21 @@ export default async function InsightsSection({ context }: { context: SectionCon
   */
   const wineEntries = wines.map((wine) => ({ slug: wine.slug, name: wine.name }));
   const guides = context === "home" ? allGuides.slice(0, HOME_LIMIT) : allGuides;
+  const cardsRevealOnce = context === "home" || !showHeader;
 
-  return (
+  const section = (
     <SectionShell
       id="insights"
       context={context}
-      eyebrow="Insights"
-      title="Know the regions"
-      intro="Short guides to the places behind our wines: where they are, which grapes they grow, and what to pour them with."
+      eyebrow={SECTION_EYEBROW}
+      title={SECTION_TITLE}
+      intro={SECTION_INTRO}
+      showHeader={context === "home" ? false : showHeader}
     >
       <ul className="grid gap-8 justify-items-center md:grid-cols-2 lg:grid-cols-3">
         {guides.map((guide, i) => (
           <li key={guide.slug}>
-            <Reveal delay={(i % 3) * 90}>
+            <Reveal delay={cardsRevealOnce ? i * 55 : (i % 3) * 90} subtle={cardsRevealOnce} once={cardsRevealOnce}>
               {/*
                 InsightFlipCard is a Client Component that owns the FlipCard and
                 both its faces, including the onPointerDown handler on the wine link.
@@ -56,5 +61,13 @@ export default async function InsightsSection({ context }: { context: SectionCon
         </div>
       )}
     </SectionShell>
+  );
+
+  if (context !== "home") return section;
+
+  return (
+    <InsightsHomeExperience eyebrow={SECTION_EYEBROW} title={SECTION_TITLE} intro={SECTION_INTRO}>
+      {section}
+    </InsightsHomeExperience>
   );
 }

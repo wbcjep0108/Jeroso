@@ -61,16 +61,17 @@ function CartContent() {
                   <div className="min-w-0 flex-1">
                     <Link href={`/wines/${item.slug}`} className="font-serif text-2xl italic hover:text-sage-light">{item.name}</Link>
                     <p className="mt-1 text-sm text-white/60">{formatPrice(item.price)} each</p>
-                    <div className="mt-5 flex flex-wrap items-center justify-between gap-4">
+                    <div className="mt-5 flex items-center gap-4">
                       <div className="flex h-10 items-center rounded-lg border border-white/15 bg-white/[0.03]">
                         <button type="button" onClick={() => void changeQuantity(item.slug, item.quantity - 1)} disabled={item.quantity <= 1} className="flex h-9 w-9 items-center justify-center text-sage hover:text-white disabled:opacity-30" aria-label={`Decrease ${item.name} quantity`}><Minus size={15} /></button>
                         <span className="w-8 text-center text-sm tabular-nums">{item.quantity}</span>
                         <button type="button" onClick={() => void changeQuantity(item.slug, item.quantity + 1)} disabled={item.quantity >= 12} className="flex h-9 w-9 items-center justify-center text-sage hover:text-white disabled:opacity-30" aria-label={`Increase ${item.name} quantity`}><Plus size={15} /></button>
                       </div>
-                      <button type="button" onClick={() => void remove(item.slug)} className="inline-flex items-center gap-2 text-xs text-white/45 hover:text-white"><Trash2 size={14} /> Remove</button>
                     </div>
+                    <button type="button" onClick={() => void remove(item.slug)} className="mt-4 inline-flex items-center gap-2 text-xs text-white/45 hover:text-white sm:hidden" aria-label={`Remove ${item.name} from cart`}><Trash2 size={14} /> Remove</button>
                   </div>
                   <p className="hidden font-serif text-xl sm:block">{formatPrice(item.price * item.quantity)}</p>
+                  <button type="button" onClick={() => void remove(item.slug)} className="hidden shrink-0 self-end pb-1 text-xs text-white/45 hover:text-white sm:inline-flex sm:items-center sm:gap-2" aria-label={`Remove ${item.name} from cart`}><Trash2 size={14} /> Remove</button>
                 </article>
               ))}
             </div>

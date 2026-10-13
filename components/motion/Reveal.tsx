@@ -38,51 +38,64 @@ type RevealProps = {
   children: ReactNode;
   /** Delay in ms applied when entering only, for staggering siblings. */
   delay?: number;
+  /** A smaller 24px entrance offset for compact reveal sequences. */
+  subtle?: boolean;
+  /** Keep the content visible after its first viewport entrance. */
+  once?: boolean;
   className?: string;
   style?: CSSProperties;
 };
 
-export default function Reveal({ children, delay = 0, className = "", style }: RevealProps) {
+export default function Reveal({ children, delay = 0, subtle = false, once = false, className = "", style }: RevealProps) {
   const ref = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState<Position>("visible");
 
   useEffect(() => {
     const node = ref.current;
     if (!node) return;
+    const observedNode = node;
     let first = true;
+    const observer = getObserver();
 
-    callbacks.set(node, (entry) => {
+    function show() {
+      setPosition("visible");
+      if (once) {
+        observer.unobserve(observedNode);
+        callbacks.delete(observedNode);
+      }
+    }
+
+    callbacks.set(observedNode, (entry) => {
       if (first) {
         first = false;
         // Anything already on screen at load stays put instead of fading out at the margins.
         const rect = entry.boundingClientRect;
         if (rect.bottom > 0 && rect.top < window.innerHeight) {
-          setPosition("visible");
+          show();
           return;
         }
       }
       if (entry.isIntersecting) {
-        setPosition("visible");
+        show();
       } else {
         const rootTop = entry.rootBounds?.top ?? 0;
         setPosition(entry.boundingClientRect.top < rootTop ? "above" : "below");
       }
     });
 
-    const observer = getObserver();
-    observer.observe(node);
+    observer.observe(observedNode);
     return () => {
-      observer.unobserve(node);
-      callbacks.delete(node);
+      observer.unobserve(observedNode);
+      callbacks.delete(observedNode);
     };
-  }, []);
+  }, [once]);
 
   const stateClass =
     position === "visible"
       ? "opacity-100 translate-y-0"
       : position === "above"
-        ? "motion-safe:opacity-0 motion-safe:-translate-y-8"
-        : "motion-safe:opacity-0 motion-safe:translate-y-10";
+        ? `motion-safe:opacity-0 ${subtle ? "motion-safe:-translate-y-6" : "motion-safe:-translate-y-8"}`
+        : `motion-safe:opacity-0 ${subtle ? "motion-safe:translate-y-6" : "motion-safe:translate-y-10"}`;
 
   return (
     <div

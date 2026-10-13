@@ -4,6 +4,7 @@ import Container from "@/components/layout/Container";
 import Reveal from "@/components/motion/Reveal";
 import type { SectionContext } from "@/components/sections/SectionShell";
 import { siteInfo } from "@/lib/site-info";
+import type { ReactNode } from "react";
 
 const TO_BE_FILLED = "To be filled in";
 
@@ -12,24 +13,30 @@ const details = [
   { label: "Opening hours", value: siteInfo.hours },
 ];
 
-function ContactDetailsAndForm() {
+function ContactDetailsAndForm({ intro }: { intro: ReactNode }) {
   return (
     <div className="grid gap-12 lg:grid-cols-[1fr_1.6fr]">
-      <Reveal>
-        <dl className="space-y-6">
-          {details.map((item) => (
-            <div key={item.label}>
-              <dt className="text-xs uppercase tracking-[0.2em] text-sage">{item.label}</dt>
-              <dd className={`mt-2 ${item.value === TO_BE_FILLED ? "italic text-white/40" : "text-white/80"}`}>
-                {item.value}
-              </dd>
-            </div>
-          ))}
-        </dl>
-      </Reveal>
-      <Reveal delay={120}>
-        <ContactForm />
-      </Reveal>
+      <div aria-hidden="true" className="hidden lg:block" />
+      <div>
+        {intro}
+        <Reveal delay={60}>
+          <dl className="mt-10 space-y-6">
+            {details.map((item) => (
+              <div key={item.label}>
+                <dt className="text-xs uppercase tracking-[0.2em] text-sage">{item.label}</dt>
+                <dd className={`mt-2 ${item.value === TO_BE_FILLED ? "italic text-white/40" : "text-white/80"}`}>
+                  {item.value}
+                </dd>
+              </div>
+            ))}
+          </dl>
+        </Reveal>
+        <Reveal delay={120}>
+          <div className="mt-10">
+            <ContactForm />
+          </div>
+        </Reveal>
+      </div>
     </div>
   );
 }
@@ -60,17 +67,18 @@ export default function ContactSection({ context }: { context: SectionContext })
         />
       </div>
       <Container className="relative z-10 py-16 sm:py-24">
-        <Reveal>
-          <Heading id="contact-heading" className="font-serif text-4xl italic sm:text-5xl">
-            Get in touch
-          </Heading>
-          <p className="mt-5 max-w-2xl leading-relaxed text-white/70">
-            Questions about a wine, or planning a private tasting? Send us a note.
-          </p>
-        </Reveal>
-        <div className="mt-12">
-          <ContactDetailsAndForm />
-        </div>
+        <ContactDetailsAndForm
+          intro={
+            <Reveal>
+              <Heading id="contact-heading" className="font-serif text-4xl italic sm:text-5xl">
+                Get in touch
+              </Heading>
+              <p className="mt-5 max-w-2xl leading-relaxed text-white/70">
+                Questions about a wine, or planning a private tasting? Send us a note.
+              </p>
+            </Reveal>
+          }
+        />
       </Container>
     </section>
   );
