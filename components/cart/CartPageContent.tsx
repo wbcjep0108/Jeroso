@@ -79,8 +79,8 @@ function CartContent() {
             <aside className="h-fit rounded-2xl border border-white/10 bg-white/[0.035] p-6 sm:p-7">
               <h2 className="font-serif text-3xl italic">Summary</h2>
               <div className="mt-6 flex items-center justify-between border-t border-white/10 pt-5"><span className="text-sm text-white/60">Subtotal</span><span className="font-serif text-2xl">{formatPrice(total)}</span></div>
-              <button type="button" disabled className="mt-6 h-12 w-full rounded-xl bg-white/20 text-sm text-white/50">Checkout coming soon</button>
-              <p className="mt-4 text-center text-xs leading-relaxed text-white/40">Orders and delivery will be available soon.</p>
+              <Link href="/checkout" className="mt-6 inline-flex h-12 w-full items-center justify-center rounded-xl bg-white text-sm font-medium text-ink hover:bg-sage-light motion-safe:transition-colors">Proceed to checkout</Link>
+              <p className="mt-4 text-center text-xs leading-relaxed text-white/40">Review delivery details before submitting your order request.</p>
             </aside>
           </div>
         )}

@@ -8,6 +8,7 @@ import {
   runTransaction,
   serverTimestamp,
   setDoc,
+  writeBatch,
   type Unsubscribe,
 } from "firebase/firestore";
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
@@ -22,12 +23,23 @@ export type CartItem = {
   quantity: number;
 };
 
+export type CheckoutDetails = {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  address: string;
+  city: string;
+  postalCode: string;
+};
+
 type CartContextValue = {
   items: CartItem[];
   loading: boolean;
   addItem: (item: Omit<CartItem, "quantity">, quantity?: number) => Promise<void>;
   updateQuantity: (slug: string, quantity: number) => Promise<void>;
   removeItem: (slug: string) => Promise<void>;
+  checkout: (details: CheckoutDetails) => Promise<string>;
 };
 
 const CartContext = createContext<CartContextValue | undefined>(undefined);
@@ -87,6 +99,27 @@ export function CartProvider({ children }: { children: ReactNode }) {
     async removeItem(slug) {
       if (!user) throw new Error("Sign in to update your cart.");
       await deleteDoc(doc(db, "users", user.uid, "cart", slug));
+    },
+    async checkout(details) {
+      if (!user) throw new Error("Sign in to complete checkout.");
+      if (!items.length) throw new Error("Your cart is empty.");
+
+      const orderRef = doc(collection(db, "users", user.uid, "orders"));
+      const batch = writeBatch(db);
+      const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
+      batch.set(orderRef, {
+        ...details,
+        items,
+        itemCount: items.reduce((sum, item) => sum + item.quantity, 0),
+        total,
+        status: "submitted",
+        createdAt: serverTimestamp(),
+      });
+      items.forEach((item) => batch.delete(doc(db, "users", user.uid, "cart", item.slug)));
+      await batch.commit();
+
+      return orderRef.id;
     },
   }), [items, loading, user]);
 
