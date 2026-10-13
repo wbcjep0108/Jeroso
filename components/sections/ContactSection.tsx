@@ -2,6 +2,7 @@ import ContactForm from "@/components/contact/ContactForm";
 import AnimatedFooter from "@/components/animated-footer";
 import Container from "@/components/layout/Container";
 import Reveal from "@/components/motion/Reveal";
+import ContactVeilPanel from "@/components/sections/ContactVeilPanel";
 import type { SectionContext } from "@/components/sections/SectionShell";
 import { siteInfo } from "@/lib/site-info";
 import type { ReactNode } from "react";
@@ -15,8 +16,8 @@ const details = [
 
 function ContactDetailsAndForm({ intro }: { intro: ReactNode }) {
   return (
-    <div className="grid gap-12 lg:grid-cols-[1fr_1.6fr]">
-      <div aria-hidden="true" className="hidden lg:block" />
+    <div className="grid items-stretch gap-12 lg:grid-cols-[1fr_1.6fr]">
+      <ContactVeilPanel />
       <div>
         {intro}
         <Reveal delay={60}>
@@ -50,7 +51,7 @@ export default function ContactSection({ context }: { context: SectionContext })
       aria-labelledby="contact-heading"
       data-contact-context={context}
       tabIndex={-1}
-      className="scroll-mt-24 focus:outline-none"
+      className="scroll-mt-24 overflow-x-clip focus:outline-none"
     >
       <div className="relative z-0 h-[50vh] min-h-[320px] max-h-[560px] w-full">
         <AnimatedFooter

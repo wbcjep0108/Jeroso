@@ -13,7 +13,7 @@ export default function Footer() {
         <div className="max-w-sm">
           <Logo />
           <p className="mt-4 text-sm leading-relaxed text-white/60">
-            J.E.N. - the journey, the essence, the nectar. Bottles chosen by
+            J.E.N. - journey, essence, nectar. Bottles chosen by
             sommeliers, with the story behind every pour.
           </p>
         </div>
